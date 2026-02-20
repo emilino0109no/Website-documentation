@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Website-documentation</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg:    #060a06;
+    --green: #00ff41;
+    --glow:  #00cc33;
+    --white: #e8f5e8;
+    --gray:  #0f1a0f;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 60px 20px 80px;
+    overflow-x: hidden;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 2px,
+      rgba(0,255,65,0.012) 2px, rgba(0,255,65,0.012) 4px
+    );
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  .container { max-width: 540px; width: 100%; z-index: 1; }
+
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .logo {
+    font-family: 'Black Han Sans', sans-serif;
+    font-size: clamp(36px, 10vw, 64px);
+    letter-spacing: -1px;
+    line-height: 0.9;
+    text-transform: uppercase;
+    color: var(--white);
+    display: inline-block;
+  }
+
+  .logo span {
+    color: var(--green);
+    display: block;
+    text-shadow: 0 0 20px rgba(0,255,65,0.5), 0 0 60px rgba(0,255,65,0.2);
+  }
+
+  .logo::after {
+    content: '';
+    display: block;
+    height: 2px;
+    background: var(--green);
+    box-shadow: 0 0 10px var(--green);
+    margin-top: 12px;
+    animation: growLine 0.8s 0.4s ease both;
+    transform-origin: left;
+  }
+
+  .subtitle {
+    margin-top: 14px;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--glow);
+    opacity: 0.45;
+  }
+
+  .links { display: flex; flex-direction: column; gap: 10px; }
+
+  .link-item {
+    opacity: 0;
+    animation: fadeUp 0.4s ease forwards;
+  }
+
+  .link-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 18px 22px;
+    background: var(--gray);
+    border: 1px solid #1a2e1a;
+    color: var(--white);
+    text-decoration: none;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    gap: 12px;
+  }
+
+  .link-btn::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0;
+    height: 100%;
+    width: 3px;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    transform: scaleY(0);
+    transition: transform 0.2s ease;
+    transform-origin: bottom;
+  }
+
+  .link-btn:hover {
+    background: #111d11;
+    border-color: var(--glow);
+    color: var(--green);
+    transform: translateX(4px);
+    box-shadow: 0 0 14px rgba(0,255,65,0.07);
+  }
+
+  .link-btn:hover::before { transform: scaleY(1); }
+
+  .link-info { flex: 1; min-width: 0; }
+
+  .link-label {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .link-sub {
+    display: block;
+    font-size: 9px;
+    color: #2a5a2a;
+    margin-top: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    text-transform: none;
+    transition: color 0.2s;
+  }
+
+  .link-btn:hover .link-sub { color: #4a9a4a; }
+
+  .arrow {
+    color: var(--glow);
+    font-size: 16px;
+    opacity: 0.5;
+    flex-shrink: 0;
+    transition: transform 0.2s, opacity 0.2s, color 0.2s;
+  }
+
+  .link-btn:hover .arrow {
+    transform: translateX(3px);
+    opacity: 1;
+    color: var(--green);
+    text-shadow: 0 0 8px var(--green);
+  }
+
+  .footer {
+    margin-top: 52px;
+    text-align: center;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: #1a2e1a;
+    text-transform: uppercase;
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes growLine {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="logo">OFFENSIVE<span>CORE</span></div>
+    <p class="subtitle">// LINKS //</p>
+  </div>
+
+  <div class="links" id="linksContainer"></div>
+
+  <div class="footer">OFFENSIVE CORE © 2015</div>
+</div>
+
+<script>
+// ================================================================
+//  ✏️  AGREGA TUS LINKS AQUÍ
+//
+//  EJEMPLOS DE RUTAS:
+//
+//  Ruta relativa (archivo/carpeta junto a este .html):
+//    url: 'legal/legal.html'
+//    url: 'musica/playlist.html'
+//    url: 'docs/manual.pdf'
+//    url: 'imagenes/foto.jpg'
+//
+//  Subir un nivel:
+//    url: '../otraCarpeta/archivo.html'
+//
+//  URL web normal:
+//    url: 'https://youtube.com'
+//
+//  sub: texto pequeño debajo del nombre (opcional, puedes quitarlo)
+// ================================================================
+
+const links = [
+
+  {
+    label : 'LEGAL',
+    url   : 'legal/index_legal.html',
+    sub   : 'legal/legal.html'
+  },
+
+  {
+    label : 'EMPRESA',
+    url   : 'Empresa/index_empresa.html',
+    sub   : 'empresa/index_empresa.html'
+  },
+
+  {
+    label : 'SERVICIOS',
+    url   : 'servicios/index_servicios.html',
+    sub   : 'servicios/index_servicios.html'
+  },
+
+  // ➕ Agrega más copiando este bloque:
+  // {
+  //   label : 'NOMBRE',
+  //   url   : 'carpeta/archivo.html',
+  //   sub   : 'descripción opcional'
+  // },
+
+];
+
+// ================================================================
+//  🚫 NO MODIFICAR DEBAJO DE ESTA LÍNEA
+// ================================================================
+
+const container = document.getElementById('linksContainer');
+
+links.forEach((link, i) => {
+  const item = document.createElement('div');
+  item.className = 'link-item';
+  item.style.animationDelay = (i * 0.07) + 's';
+  item.innerHTML = `
+    <a class="link-btn" href="${esc(link.url)}" target="_blank" rel="noopener">
+      <div class="link-info">
+        <span class="link-label">${esc(link.label)}</span>
+        ${ link.sub ? `<span class="link-sub">${esc(link.sub)}</span>` : '' }
+      </div>
+      <span class="arrow">→</span>
+    </a>`;
+  container.appendChild(item);
+});
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
