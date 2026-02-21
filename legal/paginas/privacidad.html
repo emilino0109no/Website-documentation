@@ -1,11 +1,556 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Política de Privacidad — Offensive Core</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" href="../../imagenes/Offensive_Core.png" type="image/png">
+
+  <style>
+
+    :root {
+      --green: #00ff41;
+      --green-dim: #00c832;
+      --green-dark: #007a1f;
+      --green-glow: rgba(0,255,65,0.18);
+      --bg: #050d05;
+      --bg2: #0a150a;
+      --bg3: #0f1f0f;
+      --text: #b8d9b8;
+      --mono: 'Share Tech Mono', monospace;
+      --sans: 'Rajdhani', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 17px;
+      line-height: 1.75;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Matrix rain canvas */
+    #matrix-bg {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+      opacity: 0.07;
+      pointer-events: none;
+    }
+
+    /* Scanlines overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.13) 2px,
+        rgba(0,0,0,0.13) 4px
+      );
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .wrapper {
+      position: relative;
+      z-index: 2;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 28px 80px;
+    }
+
+    /* ─── HEADER ─── */
+    header {
+      padding: 60px 0 40px;
+      border-bottom: 1px solid var(--green-dark);
+      margin-bottom: 56px;
+      position: relative;
+    }
+
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 10px;
+    }
+
+    .logo-icon {
+      width: 54px;
+      height: 54px;
+      flex-shrink: 0;
+    }
+
+    .logo-text {
+      font-family: var(--mono);
+      font-size: 1.9rem;
+      color: var(--green);
+      text-shadow: 0 0 18px var(--green), 0 0 40px var(--green-dark);
+      letter-spacing: 0.06em;
+    }
+
+    .logo-text span { color: #fff; opacity: 0.55; }
+
+    .tagline {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--green-dark);
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      margin-left: 74px;
+    }
+
+    .page-title {
+      margin-top: 36px;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--green);
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      opacity: 0.7;
+    }
+
+    .page-title::before { content: '> '; }
+
+    h1 {
+      font-family: var(--sans);
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.1;
+      margin-top: 6px;
+      letter-spacing: 0.01em;
+    }
+
+    h1 em {
+      font-style: normal;
+      color: var(--green);
+      text-shadow: 0 0 20px var(--green);
+    }
+
+    .meta {
+      margin-top: 18px;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: #4d774d;
+      display: flex;
+      gap: 28px;
+      flex-wrap: wrap;
+    }
+
+    /* ─── SECTION ─── */
+    section {
+      margin-bottom: 52px;
+      background: var(--bg2);
+      border: 1px solid rgba(0,255,65,0.12);
+      border-left: 3px solid var(--green-dark);
+      border-radius: 4px;
+      padding: 32px 36px;
+      position: relative;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    section:hover {
+      border-left-color: var(--green);
+      box-shadow: -4px 0 24px rgba(0,255,65,0.12), inset 0 0 60px rgba(0,255,65,0.02);
+    }
+
+    .section-id {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--green-dark);
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .section-id::before { content: '['; }
+    .section-id::after  { content: ']'; }
+
+    h2 {
+      font-family: var(--sans);
+      font-weight: 700;
+      font-size: 1.35rem;
+      color: var(--green);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    h2 svg { flex-shrink: 0; }
+
+    p { margin-bottom: 14px; color: var(--text); }
+    p:last-child { margin-bottom: 0; }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 14px 0;
+    }
+
+    ul li {
+      padding: 7px 0 7px 22px;
+      position: relative;
+      color: var(--text);
+      border-bottom: 1px solid rgba(0,255,65,0.05);
+    }
+
+    ul li::before {
+      content: '▸';
+      position: absolute;
+      left: 0;
+      color: var(--green);
+      font-size: 0.8rem;
+      top: 9px;
+    }
+
+    ul li:last-child { border-bottom: none; }
+
+    strong { color: #d0f0d0; font-weight: 600; }
+
+    a {
+      color: var(--green);
+      text-decoration: none;
+      border-bottom: 1px dashed var(--green-dark);
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    a:hover {
+      color: #fff;
+      border-color: #fff;
+    }
+
+    .highlight-box {
+      background: rgba(0,255,65,0.05);
+      border: 1px solid rgba(0,255,65,0.2);
+      border-radius: 3px;
+      padding: 16px 20px;
+      margin: 18px 0;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      color: var(--green-dim);
+    }
+
+    .highlight-box::before {
+      content: '// ';
+      opacity: 0.5;
+    }
+
+    /* Contact card */
+    .contact-card {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    @media(max-width:560px){ .contact-card { grid-template-columns: 1fr; } }
+
+    .contact-item {
+      background: var(--bg3);
+      border: 1px solid rgba(0,255,65,0.12);
+      border-radius: 3px;
+      padding: 14px 18px;
+    }
+
+    .contact-label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--green-dark);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .contact-value {
+      font-size: 0.95rem;
+      color: #d0f0d0;
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      border-top: 1px solid var(--green-dark);
+      padding-top: 30px;
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: #3a5c3a;
+      letter-spacing: 0.1em;
+    }
+
+    footer span { color: var(--green-dark); }
+
+    /* Blinking cursor */
+    .cursor::after {
+      content: '█';
+      color: var(--green);
+      animation: blink 1s step-end infinite;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    /* Fade-in sections */
+    section {
+      animation: fadeUp 0.5s ease both;
+    }
+
+    section:nth-child(1)  { animation-delay: 0.05s; }
+    section:nth-child(2)  { animation-delay: 0.1s; }
+    section:nth-child(3)  { animation-delay: 0.15s; }
+    section:nth-child(4)  { animation-delay: 0.2s; }
+    section:nth-child(5)  { animation-delay: 0.25s; }
+    section:nth-child(6)  { animation-delay: 0.3s; }
+    section:nth-child(7)  { animation-delay: 0.35s; }
+    section:nth-child(8)  { animation-delay: 0.4s; }
+    section:nth-child(9)  { animation-delay: 0.45s; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Top glow bar */
+    .glow-bar {
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--green), transparent);
+      width: 100%;
+      position: fixed;
+      top: 0; left: 0;
+      z-index: 100;
+      box-shadow: 0 0 18px var(--green);
+    }
+  </style>
 </head>
 <body>
-    
+
+<div class="glow-bar"></div>
+<canvas id="matrix-bg"></canvas>
+
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo-row">
+      <!-- Shield / Target Icon -->
+      <svg class="logo-icon" viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="27,4 50,15 50,30 27,52 4,30 4,15" fill="none" stroke="#00ff41" stroke-width="1.5" stroke-linejoin="round" opacity="0.6"/>
+        <circle cx="27" cy="27" r="12" stroke="#00ff41" stroke-width="1.4" fill="none"/>
+        <circle cx="27" cy="27" r="5" stroke="#00c832" stroke-width="1.2" fill="none"/>
+        <circle cx="27" cy="27" r="2" fill="#00ff41"/>
+        <line x1="4" y1="27" x2="15" y2="27" stroke="#00ff41" stroke-width="1" opacity="0.5"/>
+        <line x1="39" y1="27" x2="50" y2="27" stroke="#00ff41" stroke-width="1" opacity="0.5"/>
+        <line x1="27" y1="4" x2="27" y2="15" stroke="#00ff41" stroke-width="1" opacity="0.5"/>
+        <line x1="27" y1="39" x2="27" y2="52" stroke="#00ff41" stroke-width="1" opacity="0.5"/>
+      </svg>
+      <div class="logo-text">OFFENSIVE<span>::</span>CORE</div>
+    </div>
+    <div class="tagline">Red Team · Ethical Hacking · Penetration Testing</div>
+
+    <div class="page-title">privacy_policy.md</div>
+    <h1>Política de <em>Privacidad</em></h1>
+    <div class="meta">
+      <span>VERSIÓN: 26.0.0</span>
+      <span>ACTUALIZADO: 2026-01-25</span>
+      <span>CLASIFICACIÓN: PÚBLICO</span>
+    </div>
+  </header>
+
+  <!-- SECCIÓN 1 -->
+  <section>
+    <div class="section-id">01 · introducción</div>
+    <h2>
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8" stroke="#00ff41" stroke-width="1.4"/><line x1="9" y1="7" x2="9" y2="13" stroke="#00ff41" stroke-width="1.6" stroke-linecap="round"/><circle cx="9" cy="5" r="1.1" fill="#00ff41"/></svg>
+      Introducción
+    </h2>
+    <p><strong>Offensive Core</strong> es una empresa especializada en servicios de <strong>Red Team y hacking ético</strong>. Nos dedicamos a fortalecer la seguridad de organizaciones mediante evaluaciones ofensivas controladas, pruebas de penetración y simulaciones de adversarios — siempre bajo autorización expresa del cliente y dentro del marco legal vigente.</p>
+    <p>La presente Política de Privacidad describe cómo recopilamos, usamos, almacenamos y protegemos la información personal de nuestros clientes, socios y visitantes de nuestro sitio web, en pleno cumplimiento de la normativa de protección de datos aplicable.</p>
+    <div class="highlight-box">Todo lo que hacemos es legal, autorizado y orientado exclusivamente a mejorar tu seguridad.</div>
+  </section>
+
+  <!-- SECCIÓN 2 -->
+  <section>
+    <div class="section-id">02 · datos recopilados</div>
+    <h2>
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="3" width="14" height="12" rx="2" stroke="#00ff41" stroke-width="1.4"/><line x1="5" y1="7" x2="13" y2="7" stroke="#00ff41" stroke-width="1.2" stroke-linecap="round"/><line x1="5" y1="10" x2="10" y2="10" stroke="#00ff41" stroke-width="1.2" stroke-linecap="round"/></svg>
+      Datos que Recopilamos
+    </h2>
+    <p>Únicamente recopilamos información necesaria para la prestación de nuestros servicios. Los datos pueden incluir:</p>
+    <ul>
+      <li><strong>Datos de contacto:</strong> nombre, apellidos, correo electrónico, número de teléfono y cargo profesional.</li>
+      <li><strong>Datos empresariales:</strong> nombre de la organización, sector, tamaño y descripción del entorno tecnológico.</li>
+      <li><strong>Datos técnicos del engagement:</strong> rangos de IP, dominios, sistemas dentro del alcance (scope) y documentación de autorización.</li>
+      <li><strong>Datos de navegación:</strong> dirección IP, tipo de navegador, páginas visitadas y duración de la sesión (de forma anonimizada).</li>
+      <li><strong>Comunicaciones:</strong> correos, solicitudes de propuesta y mensajes enviados a través de nuestros canales oficiales.</li>
+    </ul>
+  </section>
+
+  <!-- SECCIÓN 3 -->
+  <section>
+    <div class="section-id">03 · finalidad del tratamiento</div>
+    <h2>
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2L15 5.5V12.5L9 16L3 12.5V5.5L9 2Z" stroke="#00ff41" stroke-width="1.4" stroke-linejoin="round"/><circle cx="9" cy="9" r="2.5" stroke="#00ff41" stroke-width="1.2"/></svg>
+      Finalidad del Tratamiento
+    </h2>
+    <p>Los datos personales que recopilamos son utilizados exclusivamente para:</p>
+    <ul>
+      <li>Gestionar y ejecutar los servicios de seguridad contratados (pentesting, Red Team, auditorías).</li>
+      <li>Elaborar y entregar informes técnicos y ejecutivos de los resultados obtenidos.</li>
+      <li>Cumplir con las obligaciones legales y contractuales derivadas del engagement.</li>
+      <li>Responder a solicitudes de información, presupuestos y soporte técnico.</li>
+      <li>Mejorar continuamente nuestros procesos internos y la calidad del servicio.</li>
+      <li>Enviar comunicaciones sobre actualizaciones de seguridad o nuevos servicios, únicamente con consentimiento previo.</li>
+    </ul>
+    <div class="highlight-box">Nunca vendemos, alquilamos ni compartimos tus datos con terceros con fines comerciales.</div>
+  </section>
+
+  <!-- SECCIÓN 4 -->
+  <section>
+    <div class="section-id">04 · base legal</div>
+    <h2>
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2v14M5 5l4-3 4 3M5 13l4 3 4-3" stroke="#00ff41" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Base Legal del Tratamiento
+    </h2>
+    <p>El tratamiento de datos personales se realiza bajo las siguientes bases legales, de conformidad con el Reglamento General de Protección de Datos (RGPD) y legislación local aplicable:</p>
+    <ul>
+      <li><strong>Ejecución contractual:</strong> cuando el tratamiento es necesario para prestar los servicios solicitados.</li>
+      <li><strong>Obligación legal:</strong> cuando debemos cumplir con requisitos normativos o requerimientos de autoridades competentes.</li>
+      <li><strong>Interés legítimo:</strong> para la seguridad de nuestros sistemas y la mejora de nuestros servicios.</li>
+      <li><strong>Consentimiento explícito:</strong> para comunicaciones de marketing o suscripción a boletines informativos.</li>
+    </ul>
+  </section>
+
+  <!-- SECCIÓN 5 -->
+  <section>
+    <div class="section-id">05 · seguridad de los datos</div>
+    <h2>
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="4" y="8" width="10" height="8" rx="1.5" stroke="#00ff41" stroke-width="1.4"/><path d="M6 8V6a3 3 0 016 0v2" stroke="#00ff41" stroke-width="1.4" stroke-linecap="round"/><circle cx="9" cy="12" r="1.2" fill="#00ff41"/></svg>
+      Seguridad de los Datos
+    </h2>
+    <p>Como empresa de ciberseguridad ofensiva, la protección de la información es parte de nuestro ADN. Implementamos medidas técnicas y organizativas de nivel avanzado:</p>
+    <ul>
+      <li>Cifrado en tránsito (TLS 1.3) y en reposo (AES-256) para toda la información sensible.</li>
+      <li>Acceso basado en roles (RBAC) con principio de mínimo privilegio.</li>
+      <li>Autenticación multifactor (MFA) obligatoria para todos los sistemas internos.</li>
+      <li>Revisiones periódicas de acceso y auditorías internas de seguridad.</li>
+      <li>Eliminación segura de datos al término del contrato o según lo acordado.</li>
+      <li>Acuerdos de confidencialidad (NDA) firmados por todo el equipo operativo.</li>
+    </ul>
+    <div class="highlight-box">Los informes y hallazgos de cada engagement se almacenan en entornos aislados y se destruyen de forma segura al finalizar el período acordado.</div>
+  </section>
+
+  <!-- SECCIÓN 6 -->
+  <section>
+    <div class="section-id">06 · compartición de datos</div>
+    <h2>
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="4" cy="9" r="2" stroke="#00ff41" stroke-width="1.3"/><circle cx="14" cy="4" r="2" stroke="#00ff41" stroke-width="1.3"/><circle cx="14" cy="14" r="2" stroke="#00ff41" stroke-width="1.3"/><line x1="6" y1="8" x2="12" y2="5" stroke="#00ff41" stroke-width="1.1" stroke-linecap="round"/><line x1="6" y1="10" x2="12" y2="13" stroke="#00ff41" stroke-width="1.1" stroke-linecap="round"/></svg>
+      Compartición de Datos con Terceros
+    </h2>
+    <p>No comercializamos ni cedemos datos personales. Únicamente podemos compartir información en los siguientes supuestos limitados:</p>
+    <ul>
+      <li><strong>Subcontratistas técnicos:</strong> proveedores que colaboran en la prestación del servicio, sujetos a NDA y cláusulas de protección de datos equivalentes.</li>
+      <li><strong>Obligación legal:</strong> cuando así lo requieran autoridades judiciales o reguladoras competentes.</li>
+      <li><strong>Consentimiento del titular:</strong> en cualquier otro caso, únicamente si el cliente o usuario ha prestado consentimiento expreso y por escrito.</li>
+    </ul>
+  </section>
+
+  <!-- SECCIÓN 7 -->
+  <section>
+    <div class="section-id">07 · derechos del usuario</div>
+    <h2>
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="6" r="3" stroke="#00ff41" stroke-width="1.4"/><path d="M3 16c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="#00ff41" stroke-width="1.4" stroke-linecap="round"/></svg>
+      Tus Derechos
+    </h2>
+    <p>Como titular de los datos, tienes derecho a ejercer en cualquier momento:</p>
+    <ul>
+      <li><strong>Acceso:</strong> solicitar información sobre qué datos tuyos tratamos.</li>
+      <li><strong>Rectificación:</strong> corregir datos inexactos o incompletos.</li>
+      <li><strong>Supresión:</strong> solicitar la eliminación de tus datos ("derecho al olvido").</li>
+      <li><strong>Limitación:</strong> restringir el tratamiento en determinadas circunstancias.</li>
+      <li><strong>Portabilidad:</strong> recibir tus datos en un formato estructurado y de uso común.</li>
+      <li><strong>Oposición:</strong> oponerte al tratamiento basado en interés legítimo o con fines de marketing.</li>
+      <li><strong>Revocación del consentimiento:</strong> en cualquier momento, sin efecto retroactivo.</li>
+    </ul>
+    <p>Para ejercer cualquiera de estos derechos, contacta con nosotros a través de los canales indicados en la sección de contacto. Responderemos en un plazo máximo de <strong>30 días</strong>.</p>
+  </section>
+
+  <!-- SECCIÓN 8 -->
+  <section>
+    <div class="section-id">08 · retención de datos</div>
+    <h2>
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7" stroke="#00ff41" stroke-width="1.4"/><polyline points="9,5 9,9 12,11" stroke="#00ff41" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Retención de Datos
+    </h2>
+    <p>Los datos personales son conservados únicamente durante el tiempo estrictamente necesario para la finalidad para la que fueron recogidos:</p>
+    <ul>
+      <li><strong>Datos contractuales:</strong> durante la vigencia del contrato y hasta 5 años después de su terminación, conforme a obligaciones legales mercantiles.</li>
+      <li><strong>Datos técnicos del engagement:</strong> según lo estipulado en el acuerdo de servicio; por defecto, 90 días tras la entrega del informe final.</li>
+      <li><strong>Datos de contacto y marketing:</strong> hasta que se revoque el consentimiento o se solicite la baja.</li>
+      <li><strong>Datos de navegación anonimizados:</strong> máximo 13 meses.</li>
+    </ul>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>© 2015 <span>OFFENSIVE CORE S.L.</span> — Todos los derechos reservados.</p>
+    <p style="margin-top:8px;">Hacking ético · Red Team · Seguridad ofensiva responsable <span class="cursor"></span></p>
+  </footer>
+
+</div>
+
+<!-- Matrix Rain -->
+<script>
+  const canvas = document.getElementById('matrix-bg');
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const chars = 'アイウエオカキクケコ01アセキュリティ░▒▓0110ABCDEF<>{}[]';
+  const fontSize = 13;
+  let cols;
+  let drops = [];
+
+  function init() {
+    cols = Math.floor(canvas.width / fontSize);
+    drops = Array(cols).fill(1);
+  }
+  init();
+  window.addEventListener('resize', init);
+
+  function draw() {
+    ctx.fillStyle = 'rgba(5,13,5,0.06)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#00ff41';
+    ctx.font = fontSize + 'px Share Tech Mono, monospace';
+    for (let i = 0; i < drops.length; i++) {
+      const text = chars[Math.floor(Math.random() * chars.length)];
+      ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+      drops[i]++;
+    }
+  }
+
+  setInterval(draw, 55);
+</script>
+
 </body>
 </html>
