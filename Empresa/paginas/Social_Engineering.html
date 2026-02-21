@@ -1,11 +1,1490 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Social Engineering — Offensive Core</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="icon" href="../../imagenes/Offensive_Core.png" type="image/png">
+  <style>
+    :root {
+      --purple:      #c084fc;
+      --purple-dim:  #9b5de5;
+      --purple-dark: #4a1a7a;
+      --purple-xs:   #1e0a33;
+      --purple-glow: rgba(192,132,252,0.18);
+      --white:       #f0ecff;
+      --white-dim:   #a899cc;
+      --white-xs:    #4a4260;
+      --bg:          #07040f;
+      --bg2:         #0e0818;
+      --bg3:         #150d24;
+      --bg4:         #1c1230;
+      --red-accent:  #ff4f6e;
+      --mono:        'Share Tech Mono', monospace;
+      --serif:       'Playfair Display', serif;
+      --sans:        'Jost', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--white-dim);
+      font-family: var(--sans);
+      font-size: 17px;
+      line-height: 1.75;
+      overflow-x: hidden;
+      cursor: default;
+    }
+
+    /* Grain texture overlay */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 50; opacity: 0.4;
+    }
+
+    #bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+    /* ─── TOPBAR ─── */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 200; height: 52px;
+      background: rgba(7,4,15,0.94);
+      border-bottom: 1px solid rgba(192,132,252,0.1);
+      display: flex; align-items: center;
+      padding: 0 52px;
+      backdrop-filter: blur(10px);
+    }
+
+    .topbar-logo {
+      font-family: var(--mono); font-size: 0.72rem;
+      color: var(--purple); letter-spacing: 0.12em;
+      text-shadow: 0 0 14px var(--purple-dim); flex: 1;
+    }
+
+    .topbar-logo span { color: rgba(255,255,255,0.25); }
+
+    .topbar-nav {
+      display: flex; gap: 38px; list-style: none;
+      font-family: var(--mono); font-size: 0.62rem;
+      letter-spacing: 0.15em; text-transform: uppercase;
+    }
+
+    .topbar-nav a { color: var(--white-xs); text-decoration: none; transition: color .2s; }
+    .topbar-nav a:hover, .topbar-nav a.active { color: var(--purple); text-shadow: 0 0 8px var(--purple-dim); }
+
+    .topbar-tag {
+      margin-left: 40px; font-family: var(--mono);
+      font-size: 0.6rem; color: var(--purple-dark);
+      letter-spacing: 0.12em; display: flex; align-items: center; gap: 8px;
+    }
+
+    .tag-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--purple); box-shadow: 0 0 8px var(--purple);
+      animation: tagPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes tagPulse { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+    /* ─── HERO ─── */
+    .hero {
+      position: relative; z-index: 2;
+      min-height: 100vh;
+      display: flex; align-items: center;
+      padding: 110px 0 80px;
+      overflow: hidden;
+    }
+
+    .hero-bg-word {
+      position: absolute;
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: clamp(12rem, 25vw, 22rem);
+      font-weight: 900;
+      color: rgba(192,132,252,0.025);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      white-space: nowrap;
+      pointer-events: none;
+      letter-spacing: -0.02em;
+      user-select: none;
+    }
+
+    .hero-inner {
+      max-width: 1200px; width: 100%;
+      margin: 0 auto; padding: 0 60px;
+      display: grid; grid-template-columns: 1fr 420px;
+      gap: 80px; align-items: center;
+    }
+
+    @media(max-width:950px) {
+      .hero-inner { grid-template-columns: 1fr; padding: 0 28px; }
+      .hero-right  { display: none; }
+    }
+
+    .hero-left {}
+
+    .hero-kicker {
+      font-family: var(--mono); font-size: 0.63rem;
+      color: var(--purple-dark); letter-spacing: 0.3em;
+      text-transform: uppercase; margin-bottom: 24px;
+      display: flex; align-items: center; gap: 14px;
+    }
+
+    .hero-kicker::before {
+      content: '';
+      display: block; width: 32px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--purple-dark));
+    }
+
+    h1 {
+      font-family: var(--serif);
+      font-size: clamp(3rem, 7vw, 6.4rem);
+      font-weight: 900; line-height: 0.96;
+      letter-spacing: -0.01em;
+      color: var(--white);
+    }
+
+    h1 .italic-line {
+      font-style: italic;
+      color: var(--purple);
+      text-shadow: 0 0 40px rgba(192,132,252,.4), 0 0 80px rgba(155,93,229,.15);
+      display: block;
+    }
+
+    h1 .plain-line { display: block; }
+
+    h1 .ghost-line {
+      display: block;
+      color: rgba(255,255,255,0.18);
+      font-style: italic;
+      font-size: 0.55em;
+      letter-spacing: 0.04em;
+      margin-top: 8px;
+    }
+
+    .hero-body {
+      margin-top: 32px; max-width: 520px;
+      font-size: 1.05rem; font-weight: 300;
+      color: var(--white-dim); line-height: 1.75;
+    }
+
+    .hero-body strong { color: var(--white); font-weight: 500; }
+
+    .hero-vectors {
+      margin-top: 28px; display: flex;
+      flex-wrap: wrap; gap: 10px;
+    }
+
+    .hvec {
+      font-family: var(--mono); font-size: 0.6rem;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 6px 14px;
+      border: 1px solid rgba(192,132,252,0.2);
+      color: var(--purple-dim);
+      background: rgba(192,132,252,0.04);
+    }
+
+    .hero-actions { margin-top: 40px; display: flex; gap: 14px; flex-wrap: wrap; }
+
+    .btn-purple {
+      font-family: var(--mono); font-size: 0.72rem;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      padding: 14px 32px; background: var(--purple);
+      color: #07040f; border: none; cursor: pointer;
+      font-weight: 700; text-decoration: none; display: inline-block;
+      clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+      transition: all .2s;
+    }
+
+    .btn-purple:hover { background: #d4a0ff; box-shadow: 0 0 30px rgba(192,132,252,.5); }
+
+    .btn-outline-p {
+      font-family: var(--mono); font-size: 0.72rem;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      padding: 13px 30px; background: transparent;
+      color: var(--white-xs); border: 1px solid rgba(192,132,252,0.2);
+      cursor: pointer; text-decoration: none; display: inline-block;
+      transition: all .2s;
+    }
+
+    .btn-outline-p:hover { border-color: var(--purple); color: var(--purple); background: rgba(192,132,252,0.04); }
+
+    /* ─── HERO RIGHT — PERSONA CARD ─── */
+    .persona-card {
+      background: var(--bg2);
+      border: 1px solid rgba(192,132,252,0.12);
+      padding: 0; overflow: hidden;
+      position: relative;
+    }
+
+    .persona-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--purple), transparent);
+    }
+
+    .persona-top {
+      padding: 28px 28px 20px;
+      border-bottom: 1px solid rgba(192,132,252,0.08);
+    }
+
+    .persona-label {
+      font-family: var(--mono); font-size: 0.58rem;
+      color: var(--purple-dark); letter-spacing: 0.22em;
+      text-transform: uppercase; margin-bottom: 14px;
+    }
+
+    .persona-label::before { content: '$ '; opacity: 0.6; }
+
+    .persona-avatar {
+      width: 52px; height: 52px; border-radius: 50%;
+      border: 2px solid rgba(192,132,252,0.3);
+      background: var(--bg3);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 14px; flex-shrink: 0;
+      box-shadow: 0 0 20px rgba(192,132,252,0.1);
+    }
+
+    .persona-name {
+      font-family: var(--sans); font-weight: 600;
+      font-size: 1.05rem; color: var(--white);
+    }
+
+    .persona-title {
+      font-size: 0.82rem; color: var(--white-dim); margin-top: 2px;
+    }
+
+    .persona-company {
+      font-family: var(--mono); font-size: 0.62rem;
+      color: var(--purple); margin-top: 4px; letter-spacing: 0.05em;
+    }
+
+    .persona-body { padding: 20px 28px; }
+
+    .persona-field {
+      display: flex; align-items: flex-start;
+      gap: 12px; padding: 8px 0;
+      border-bottom: 1px solid rgba(192,132,252,0.05);
+    }
+
+    .persona-field:last-child { border-bottom: none; }
+
+    .pf-key {
+      font-family: var(--mono); font-size: 0.58rem;
+      color: var(--purple-dark); letter-spacing: 0.1em;
+      text-transform: uppercase; width: 70px; flex-shrink: 0;
+      padding-top: 2px;
+    }
+
+    .pf-val { font-size: 0.84rem; color: var(--white-dim); }
+
+    .pf-val .highlight { color: var(--purple); }
+
+    .persona-footer {
+      padding: 16px 28px;
+      background: rgba(192,132,252,0.04);
+      border-top: 1px solid rgba(192,132,252,0.08);
+      font-family: var(--mono); font-size: 0.6rem;
+      color: var(--purple-dark); letter-spacing: 0.1em;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .status-ok { color: var(--purple); }
+
+    /* ─── STATS ─── */
+    .stats-strip {
+      position: relative; z-index: 2;
+      display: grid; grid-template-columns: repeat(4,1fr);
+      gap: 1px; background: rgba(192,132,252,0.06);
+    }
+
+    @media(max-width:700px) { .stats-strip { grid-template-columns: 1fr 1fr; } }
+
+    .stat-cell {
+      background: var(--bg2); padding: 36px 24px; text-align: center;
+    }
+
+    .stat-num {
+      font-family: var(--serif); font-style: italic;
+      font-size: 3rem; font-weight: 900;
+      line-height: 1; margin-bottom: 8px;
+    }
+
+    .sn-purple { color: var(--purple); text-shadow: 0 0 20px rgba(192,132,252,.4); }
+    .sn-white  { color: var(--white); }
+    .sn-red    { color: var(--red-accent); text-shadow: 0 0 20px rgba(255,79,110,.4); }
+    .sn-dim    { color: var(--white-dim); }
+
+    .stat-lbl {
+      font-family: var(--mono); font-size: 0.58rem;
+      color: var(--white-xs); letter-spacing: 0.18em; text-transform: uppercase;
+    }
+
+    /* ─── CONTENT ─── */
+    .content {
+      position: relative; z-index: 2;
+      max-width: 1200px; margin: 0 auto;
+      padding: 0 52px 120px;
+    }
+
+    @media(max-width:700px) { .content { padding: 0 22px 80px; } }
+
+    .s-label {
+      font-family: var(--mono); font-size: 0.6rem;
+      color: var(--purple-dark); letter-spacing: 0.28em;
+      text-transform: uppercase; margin-bottom: 10px;
+    }
+
+    .s-label::before { content: '— '; }
+
+    .s-title {
+      font-family: var(--serif); font-weight: 900;
+      font-size: clamp(1.8rem, 4.5vw, 3.2rem);
+      line-height: 1.08; color: var(--white);
+      margin-bottom: 40px;
+    }
+
+    .s-title em { font-style: italic; color: var(--purple); text-shadow: 0 0 20px rgba(192,132,252,.3); }
+
+    /* ─── TECHNIQUES MASONRY ─── */
+    .techniques-section { margin: 88px 0; }
+
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 1px;
+      background: rgba(192,132,252,0.06);
+      margin-top: 40px;
+    }
+
+    @media(max-width:900px) { .tech-grid { grid-template-columns: 1fr 1fr; } }
+    @media(max-width:600px) { .tech-grid { grid-template-columns: 1fr; } }
+
+    .tech-card {
+      background: var(--bg2); padding: 36px 32px;
+      position: relative; overflow: hidden;
+      transition: background .3s;
+    }
+
+    .tech-card:hover { background: var(--bg3); }
+
+    .tech-card::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(192,132,252,0.3), transparent);
+      transform: scaleX(0); transition: transform .4s;
+    }
+
+    .tech-card:hover::after { transform: scaleX(1); }
+
+    .tech-num {
+      font-family: var(--serif); font-style: italic;
+      font-size: 5rem; font-weight: 900;
+      color: rgba(192,132,252,0.05);
+      position: absolute; top: 8px; right: 18px;
+      line-height: 1; pointer-events: none;
+      transition: color .3s;
+    }
+
+    .tech-card:hover .tech-num { color: rgba(192,132,252,0.1); }
+
+    .tech-icon { margin-bottom: 18px; }
+
+    .tech-name {
+      font-family: var(--serif); font-weight: 700;
+      font-style: italic; font-size: 1.25rem;
+      color: var(--white); margin-bottom: 4px;
+    }
+
+    .tech-tag {
+      font-family: var(--mono); font-size: 0.58rem;
+      color: var(--purple-dark); letter-spacing: 0.18em;
+      text-transform: uppercase; margin-bottom: 14px; display: block;
+    }
+
+    .tech-desc { font-size: 0.88rem; color: var(--white-dim); line-height: 1.65; font-weight: 300; }
+
+    .tech-rate {
+      margin-top: 18px; display: flex;
+      align-items: center; gap: 10px;
+    }
+
+    .rate-label {
+      font-family: var(--mono); font-size: 0.55rem;
+      color: var(--white-xs); letter-spacing: 0.12em;
+      text-transform: uppercase; width: 80px;
+    }
+
+    .rate-bar { flex: 1; height: 3px; background: rgba(255,255,255,0.05); border-radius: 2px; }
+    .rate-fill { height: 100%; border-radius: 2px; animation: barGrow .8s ease both; }
+
+    @keyframes barGrow { from { width: 0; } }
+
+    .fill-purple { background: linear-gradient(90deg, var(--purple-dark), var(--purple)); box-shadow: 0 0 6px var(--purple-dim); }
+    .fill-red    { background: linear-gradient(90deg, #c0224a, var(--red-accent)); box-shadow: 0 0 6px var(--red-accent); }
+
+    .rate-pct { font-family: var(--mono); font-size: 0.6rem; color: var(--purple-dim); width: 32px; text-align: right; }
+
+    /* ─── ATTACK LIFECYCLE ─── */
+    .lifecycle-section { margin: 88px 0; }
+
+    .lifecycle {
+      margin-top: 44px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0;
+      position: relative;
+    }
+
+    @media(max-width:900px) { .lifecycle { grid-template-columns: 1fr 1fr; } }
+    @media(max-width:500px) { .lifecycle { grid-template-columns: 1fr; } }
+
+    .lifecycle::before {
+      content: '';
+      position: absolute;
+      top: 38px; left: 10%; right: 10%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(192,132,252,0.2), transparent);
+      pointer-events: none;
+    }
+
+    @media(max-width:900px) { .lifecycle::before { display:none; } }
+
+    .lc-step {
+      padding: 0 16px 32px;
+      text-align: center;
+      position: relative;
+    }
+
+    .lc-node {
+      width: 56px; height: 56px; margin: 0 auto 18px;
+      border: 1px solid rgba(192,132,252,0.2);
+      background: var(--bg2);
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%;
+      position: relative; z-index: 1;
+      transition: border-color .3s, box-shadow .3s;
+    }
+
+    .lc-step:hover .lc-node {
+      border-color: var(--purple);
+      box-shadow: 0 0 20px rgba(192,132,252,0.2);
+    }
+
+    .lc-n {
+      font-family: var(--serif); font-style: italic;
+      font-weight: 900; font-size: 1.1rem; color: var(--purple);
+    }
+
+    .lc-name {
+      font-family: var(--sans); font-weight: 600;
+      font-size: 0.88rem; color: var(--white);
+      text-transform: uppercase; letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+
+    .lc-desc { font-size: 0.78rem; color: var(--white-xs); line-height: 1.55; }
+
+    /* ─── PSYCH PRINCIPLES ─── */
+    .psych-section { margin: 88px 0; }
+
+    .psych-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 40px;
+    }
+
+    @media(max-width:700px) { .psych-grid { grid-template-columns: 1fr; } }
+
+    .psych-card {
+      background: var(--bg2);
+      border: 1px solid rgba(192,132,252,0.08);
+      padding: 28px 30px;
+      display: flex; gap: 22px;
+      transition: border-color .3s, box-shadow .3s;
+      position: relative; overflow: hidden;
+    }
+
+    .psych-card:hover {
+      border-color: rgba(192,132,252,0.25);
+      box-shadow: inset 0 0 40px rgba(192,132,252,0.03);
+    }
+
+    .psych-card::before {
+      content: '';
+      position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+      background: var(--purple-dark);
+      transition: background .3s;
+    }
+
+    .psych-card:hover::before { background: var(--purple); }
+
+    .psych-num {
+      font-family: var(--serif); font-style: italic;
+      font-weight: 900; font-size: 2.4rem;
+      color: rgba(192,132,252,0.15); flex-shrink: 0;
+      line-height: 1; padding-top: 2px;
+    }
+
+    .psych-content {}
+
+    .psych-name {
+      font-family: var(--serif); font-style: italic;
+      font-weight: 700; font-size: 1.1rem;
+      color: var(--white); margin-bottom: 8px;
+    }
+
+    .psych-desc { font-size: 0.87rem; color: var(--white-dim); line-height: 1.6; font-weight: 300; }
+
+    .psych-example {
+      margin-top: 12px;
+      font-family: var(--mono); font-size: 0.68rem;
+      color: var(--purple-dark); letter-spacing: 0.06em;
+      padding: 8px 12px;
+      background: rgba(192,132,252,0.04);
+      border-left: 1px solid rgba(192,132,252,0.15);
+    }
+
+    .psych-example::before { content: '// Ejemplo: '; opacity: 0.7; }
+
+    /* ─── SCENARIOS ─── */
+    .scenarios-section { margin: 88px 0; }
+
+    .scenario-list { margin-top: 40px; }
+
+    .scenario-item {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 0;
+      margin-bottom: 2px;
+      background: rgba(192,132,252,0.04);
+    }
+
+    @media(max-width:750px) { .scenario-item { grid-template-columns: 1fr; } }
+
+    .scenario-left {
+      background: var(--bg2);
+      padding: 28px 32px;
+      border-right: 1px solid rgba(192,132,252,0.06);
+      display: flex; flex-direction: column; justify-content: center;
+    }
+
+    .scenario-type {
+      font-family: var(--mono); font-size: 0.58rem;
+      color: var(--purple-dark); letter-spacing: 0.2em;
+      text-transform: uppercase; margin-bottom: 8px;
+    }
+
+    .scenario-name {
+      font-family: var(--serif); font-style: italic;
+      font-weight: 700; font-size: 1.15rem; color: var(--white);
+    }
+
+    .scenario-risk {
+      margin-top: 12px; display: flex; align-items: center; gap: 8px;
+      font-family: var(--mono); font-size: 0.58rem;
+      color: var(--white-xs); letter-spacing: 0.1em;
+    }
+
+    .risk-dot { width: 7px; height: 7px; border-radius: 50%; }
+    .risk-critical { background: var(--red-accent); box-shadow: 0 0 6px var(--red-accent); }
+    .risk-high     { background: #ff8c42; box-shadow: 0 0 6px #ff8c42; }
+    .risk-medium   { background: var(--purple); box-shadow: 0 0 6px var(--purple-dim); }
+
+    .scenario-right {
+      background: var(--bg2);
+      padding: 28px 32px;
+    }
+
+    .scenario-desc {
+      font-size: 0.9rem; color: var(--white-dim);
+      line-height: 1.65; font-weight: 300;
+      margin-bottom: 14px;
+    }
+
+    .scenario-steps {
+      display: flex; flex-wrap: wrap; gap: 6px;
+    }
+
+    .step-chip {
+      font-family: var(--mono); font-size: 0.58rem;
+      color: var(--white-xs); letter-spacing: 0.06em;
+      border: 1px solid rgba(192,132,252,0.1);
+      padding: 4px 10px;
+      background: rgba(192,132,252,0.03);
+    }
+
+    /* ─── DELIVERABLES ─── */
+    .del-section { margin: 88px 0; }
+
+    .del-grid {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 1px;
+      background: rgba(192,132,252,0.06);
+      margin-top: 40px;
+    }
+
+    @media(max-width:800px) { .del-grid { grid-template-columns: 1fr 1fr; } }
+    @media(max-width:500px) { .del-grid { grid-template-columns: 1fr; } }
+
+    .del-cell {
+      background: var(--bg2); padding: 34px 28px;
+      text-align: center; transition: background .3s;
+    }
+
+    .del-cell:hover { background: var(--bg3); }
+
+    .del-icon-wrap {
+      width: 50px; height: 50px; margin: 0 auto 18px;
+      background: rgba(192,132,252,0.06);
+      border: 1px solid rgba(192,132,252,0.12);
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%;
+    }
+
+    .del-name {
+      font-family: var(--mono); font-size: 0.63rem;
+      color: var(--purple); letter-spacing: 0.16em;
+      text-transform: uppercase; margin-bottom: 10px;
+    }
+
+    .del-desc { font-size: 0.86rem; color: var(--white-dim); line-height: 1.6; font-weight: 300; }
+
+    /* ─── QUOTE ─── */
+    .quote-section {
+      margin: 88px 0; text-align: center;
+      padding: 0 60px;
+    }
+
+    .quote-text {
+      font-family: var(--serif); font-style: italic;
+      font-size: clamp(1.4rem, 3.5vw, 2.4rem);
+      font-weight: 700; color: var(--white);
+      line-height: 1.3; max-width: 800px; margin: 0 auto;
+      position: relative;
+    }
+
+    .quote-text::before {
+      content: '\201C';
+      font-size: 8rem; color: rgba(192,132,252,0.08);
+      position: absolute; top: -40px; left: -20px;
+      font-family: var(--serif); line-height: 1;
+    }
+
+    .quote-text em { color: var(--purple); font-style: italic; }
+
+    .quote-author {
+      margin-top: 24px;
+      font-family: var(--mono); font-size: 0.65rem;
+      color: var(--white-xs); letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .quote-divider {
+      width: 60px; height: 1px; margin: 20px auto;
+      background: linear-gradient(90deg, transparent, var(--purple-dark), transparent);
+    }
+
+    /* ─── CTA ─── */
+    .cta-section {
+      position: relative; z-index: 2;
+      margin: 88px 0 0;
+      overflow: hidden;
+    }
+
+    .cta-inner {
+      background: var(--bg2);
+      border: 1px solid rgba(192,132,252,0.1);
+      border-top: 2px solid var(--purple-dark);
+      padding: 70px 60px;
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 60px; align-items: start;
+      position: relative; overflow: hidden;
+    }
+
+    @media(max-width:850px) { .cta-inner { grid-template-columns: 1fr; padding: 44px 28px; } }
+
+    .cta-inner::before {
+      content: '"';
+      font-family: var(--serif); font-style: italic;
+      font-size: 36rem; font-weight: 900;
+      color: rgba(192,132,252,0.02);
+      position: absolute; top: -180px; right: -60px;
+      line-height: 1; pointer-events: none;
+    }
+
+    .cta-title {
+      font-family: var(--serif); font-style: italic;
+      font-weight: 900;
+      font-size: clamp(1.8rem, 4.5vw, 3.4rem);
+      color: var(--white); line-height: 1.05;
+      margin-bottom: 16px;
+    }
+
+    .cta-title span { color: var(--purple); text-shadow: 0 0 24px rgba(192,132,252,.4); }
+
+    .cta-body {
+      font-size: 0.98rem; color: var(--white-dim);
+      font-weight: 300; line-height: 1.7;
+      margin-bottom: 32px; max-width: 500px;
+    }
+
+    .cta-form { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .cta-input {
+      background: var(--bg3);
+      border: 1px solid rgba(192,132,252,0.15);
+      color: var(--white-dim);
+      font-family: var(--mono); font-size: 0.78rem;
+      padding: 13px 16px; outline: none;
+      flex: 1; min-width: 200px;
+      transition: border-color .2s;
+    }
+
+    .cta-input::placeholder { color: var(--purple-dark); }
+    .cta-input:focus { border-color: var(--purple); box-shadow: 0 0 0 1px rgba(192,132,252,.08); }
+
+    /* Awareness box */
+    .awareness-box {
+      background: var(--bg3);
+      border: 1px solid rgba(192,132,252,0.15);
+      padding: 30px 28px;
+    }
+
+    .awareness-title {
+      font-family: var(--serif); font-style: italic;
+      font-weight: 700; font-size: 1.1rem; color: var(--white);
+      margin-bottom: 6px;
+    }
+
+    .awareness-sub {
+      font-family: var(--mono); font-size: 0.58rem;
+      color: var(--purple-dark); letter-spacing: 0.15em;
+      text-transform: uppercase; margin-bottom: 18px;
+    }
+
+    .awareness-list { list-style: none; }
+
+    .awareness-list li {
+      font-size: 0.84rem; color: var(--white-dim);
+      padding: 7px 0 7px 18px; position: relative;
+      border-bottom: 1px solid rgba(192,132,252,0.05);
+      font-weight: 300;
+    }
+
+    .awareness-list li:last-child { border-bottom: none; }
+
+    .awareness-list li::before {
+      content: '›';
+      position: absolute; left: 0;
+      color: var(--purple); font-size: 0.9rem;
+    }
+
+    .note-small {
+      margin-top: 20px;
+      font-family: var(--mono); font-size: 0.6rem;
+      color: var(--purple-dark); letter-spacing: 0.06em;
+    }
+
+    .note-small::before { content: '// '; opacity: 0.6; }
+
+    /* ─── FOOTER ─── */
+    footer {
+      position: relative; z-index: 2;
+      border-top: 1px solid rgba(192,132,252,0.08);
+      padding: 30px 52px;
+      display: flex; align-items: center;
+      justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    }
+
+    .footer-logo {
+      font-family: var(--mono); font-size: 0.68rem;
+      color: var(--purple-dark); letter-spacing: 0.1em;
+    }
+
+    .footer-links {
+      display: flex; gap: 24px;
+      font-family: var(--mono); font-size: 0.6rem;
+      letter-spacing: 0.12em; text-transform: uppercase;
+    }
+
+    .footer-links a { color: var(--white-xs); text-decoration: none; transition: color .2s; }
+    .footer-links a:hover { color: var(--purple); }
+
+    .footer-copy { font-family: var(--mono); font-size: 0.58rem; color: #1e1230; letter-spacing: 0.06em; }
+
+    .cursor-blink::after { content: '█'; color: var(--purple); animation: blink 1s step-end infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* ─── FADE IN ─── */
+    .fade-in { opacity: 0; transform: translateY(22px); transition: opacity .65s ease, transform .65s ease; }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+    @media(max-width:768px) {
+      .topbar { padding: 0 22px; }
+      .topbar-nav { display: none; }
+      footer { padding: 24px 22px; }
+      .quote-section { padding: 0 20px; }
+    }
+  </style>
 </head>
 <body>
-    
+
+<canvas id="bg-canvas"></canvas>
+
+<!-- TOPBAR -->
+<nav class="topbar">
+  <div class="topbar-logo">OFFENSIVE<span>::</span>CORE</div>
+  <ul class="topbar-nav">
+    <li><a href="https://emilino0109no.github.io/official-page/">Inicio</a></li>
+    <li><a href="https://emilino0109no.github.io/official-page/IA_pagina/IA.html#servicios" class="active">Servicios</a></li>
+  </ul>
+  <div class="topbar-tag"><div class="tag-dot"></div>HUMAN VECTOR ACTIVE</div>
+</nav>
+
+<!-- ─── HERO ─── -->
+<section class="hero">
+  <div class="hero-bg-word">Deception</div>
+
+  <div class="hero-inner">
+    <div class="hero-left">
+      <div class="hero-kicker">Factor Humano · El Exploit Más Antiguo</div>
+
+      <h1>
+        <span class="plain-line">SOCIAL</span>
+        <span class="italic-line">Engineering</span>
+        <span class="ghost-line">// El ser humano es la vulnerabilidad</span>
+      </h1>
+
+      <p class="hero-body">
+        Los cortafuegos no detienen una llamada de teléfono. El antivirus no protege contra
+        la confianza. <strong>El 82% de las brechas de seguridad involucran al factor humano.</strong>
+        Simulamos adversarios reales que explotan la psicología, el contexto y la confianza
+        para comprometer organizaciones enteras — sin tocar un solo exploit técnico.
+      </p>
+
+      <div class="hero-vectors">
+        <span class="hvec">Spear Phishing</span>
+        <span class="hvec">Vishing</span>
+        <span class="hvec">Smishing</span>
+        <span class="hvec">Pretexting</span>
+        <span class="hvec">Tailgating</span>
+        <span class="hvec">Baiting</span>
+        <span class="hvec">Impersonation</span>
+      </div>
+
+      <div class="hero-actions">
+        <a href="#contacto" class="btn-purple">Solicitar Simulación</a>
+        <a href="#tecnicas" class="btn-outline-p">Ver Técnicas</a>
+      </div>
+    </div>
+
+    <!-- PERSONA CARD -->
+    <div class="hero-right">
+      <div class="persona-card">
+        <div class="persona-top">
+          <div class="persona-label">target_profile.json</div>
+          <div style="display:flex; gap:14px; align-items:center;">
+            <div class="persona-avatar">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                <circle cx="14" cy="10" r="5" stroke="#c084fc" stroke-width="1.2"/>
+                <path d="M4 24c0-5.52 4.48-10 10-10s10 4.48 10 10" stroke="#c084fc" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div>
+              <div class="persona-name">Carlos Martínez</div>
+              <div class="persona-title">IT Systems Administrator</div>
+              <div class="persona-company">// TechCorp S.A.</div>
+            </div>
+          </div>
+        </div>
+        <div class="persona-body">
+          <div class="persona-field">
+            <div class="pf-key">LinkedIn</div>
+            <div class="pf-val"><span class="highlight">Perfil público</span> · 342 conexiones</div>
+          </div>
+          <div class="persona-field">
+            <div class="pf-key">Email</div>
+            <div class="pf-val">c.martinez@<span class="highlight">techcorp.es</span></div>
+          </div>
+          <div class="persona-field">
+            <div class="pf-key">Accesos</div>
+            <div class="pf-val"><span class="highlight">Domain Admin</span> · VPN · Azure AD</div>
+          </div>
+          <div class="persona-field">
+            <div class="pf-key">Vector</div>
+            <div class="pf-val">Spear phishing · <span class="highlight">IT Helpdesk</span> pretext</div>
+          </div>
+          <div class="persona-field">
+            <div class="pf-key">Pretexto</div>
+            <div class="pf-val">Incidente crítico en producción a las 23:47</div>
+          </div>
+        </div>
+        <div class="persona-footer">
+          <span class="status-ok">●</span>
+          PERFIL COMPROMETIDO EN 14 MINUTOS
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-strip fade-in">
+  <div class="stat-cell">
+    <div class="stat-num sn-red" data-target="82" data-suffix="%">0%</div>
+    <div class="stat-lbl">Brechas con factor humano</div>
+  </div>
+  <div class="stat-cell">
+    <div class="stat-num sn-purple" data-target="97" data-suffix="%">0%</div>
+    <div class="stat-lbl">Tasa de click en phishing dirigido</div>
+  </div>
+  <div class="stat-cell">
+    <div class="stat-num sn-white" data-target="17" data-suffix="min">0</div>
+    <div class="stat-lbl">Tiempo medio hasta credenciales</div>
+  </div>
+  <div class="stat-cell">
+    <div class="stat-num sn-dim" data-target="6" data-suffix="">0</div>
+    <div class="stat-lbl">Vectores de ingeniería social</div>
+  </div>
+</div>
+
+<!-- ─── CONTENT ─── -->
+<div class="content">
+
+  <!-- QUOTE -->
+  <div class="quote-section fade-in" style="margin-top:88px;">
+    <div class="quote-divider"></div>
+    <p class="quote-text">
+      "El eslabón más débil en la cadena de seguridad es el ser humano. No importa cuánto
+      inviertas en tecnología: <em>un empleado bien manipulado vale más que cualquier exploit.</em>"
+    </p>
+    <div class="quote-divider"></div>
+    <div class="quote-author">Kevin Mitnick · The Art of Deception</div>
+  </div>
+
+  <!-- TÉCNICAS -->
+  <div class="techniques-section fade-in" id="tecnicas">
+    <div class="s-label">02 · arsenal de técnicas</div>
+    <h2 class="s-title">Técnicas de <em>Manipulación</em></h2>
+
+    <div class="tech-grid">
+
+      <div class="tech-card">
+        <div class="tech-num">01</div>
+        <div class="tech-icon">
+          <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
+            <rect x="3" y="8" width="32" height="22" rx="2" stroke="#c084fc" stroke-width="1.2" opacity=".5"/>
+            <polyline points="3,8 19,20 35,8" stroke="#c084fc" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="30" cy="28" r="6" fill="#07040f" stroke="#ff4f6e" stroke-width="1.2"/>
+            <path d="M27.5 28l1.5 1.5 3.5-3" stroke="#ff4f6e" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="tech-name">Spear Phishing</div>
+        <span class="tech-tag">Email · Contexto personalizado</span>
+        <p class="tech-desc">Campañas de correo electrónico altamente personalizadas usando OSINT del objetivo. Señuelos adaptados al cargo, empresa, relaciones y eventos recientes del target.</p>
+        <div class="tech-rate">
+          <div class="rate-label">Efectividad</div>
+          <div class="rate-bar"><div class="rate-fill fill-red" style="width:94%;animation-delay:.1s"></div></div>
+          <div class="rate-pct">94%</div>
+        </div>
+      </div>
+
+      <div class="tech-card">
+        <div class="tech-num">02</div>
+        <div class="tech-icon">
+          <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
+            <rect x="10" y="5" width="18" height="28" rx="3" stroke="#c084fc" stroke-width="1.2" opacity=".5"/>
+            <circle cx="19" cy="30" r="1.5" fill="#c084fc" opacity=".6"/>
+            <path d="M15 13c0-2.21 1.79-4 4-4s4 1.79 4 4" stroke="#c084fc" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="19" y1="13" x2="19" y2="21" stroke="#c084fc" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="16" y1="18" x2="22" y2="24" stroke="#c084fc" stroke-width="1" opacity=".4"/>
+          </svg>
+        </div>
+        <div class="tech-name">Vishing</div>
+        <span class="tech-tag">Voz · Suplantación de identidad</span>
+        <p class="tech-desc">Llamadas telefónicas con pretextos elaborados suplantando soporte técnico, directivos, proveedores o autoridades. Uso de spoofing de caller ID y manipulación vocal.</p>
+        <div class="tech-rate">
+          <div class="rate-label">Efectividad</div>
+          <div class="rate-bar"><div class="rate-fill fill-purple" style="width:78%;animation-delay:.15s"></div></div>
+          <div class="rate-pct">78%</div>
+        </div>
+      </div>
+
+      <div class="tech-card">
+        <div class="tech-num">03</div>
+        <div class="tech-icon">
+          <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
+            <path d="M6 19C6 11.82 11.82 6 19 6s13 5.82 13 13-5.82 13-13 13S6 26.18 6 19z" stroke="#c084fc" stroke-width="1.2" opacity=".4"/>
+            <path d="M12 19c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7-7-3.13-7-7z" stroke="#c084fc" stroke-width="1.1" opacity=".6"/>
+            <circle cx="19" cy="19" r="3" stroke="#c084fc" stroke-width="1.2"/>
+            <circle cx="19" cy="19" r="1" fill="#c084fc"/>
+            <line x1="2" y1="19" x2="6" y2="19" stroke="#c084fc" stroke-width="1" opacity=".4"/>
+            <line x1="32" y1="19" x2="36" y2="19" stroke="#c084fc" stroke-width="1" opacity=".4"/>
+          </svg>
+        </div>
+        <div class="tech-name">Pretexting</div>
+        <span class="tech-tag">Identidad fabricada · Escenario creíble</span>
+        <p class="tech-desc">Construcción de identidades ficticias completas (perfiles LinkedIn, email corporativo, historia profesional) para establecer relaciones de confianza a largo plazo antes del ataque.</p>
+        <div class="tech-rate">
+          <div class="rate-label">Efectividad</div>
+          <div class="rate-bar"><div class="rate-fill fill-purple" style="width:86%;animation-delay:.2s"></div></div>
+          <div class="rate-pct">86%</div>
+        </div>
+      </div>
+
+      <div class="tech-card">
+        <div class="tech-num">04</div>
+        <div class="tech-icon">
+          <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
+            <rect x="5" y="10" width="28" height="18" rx="2" stroke="#c084fc" stroke-width="1.2" opacity=".5"/>
+            <path d="M13 10V8a6 6 0 0112 0v2" stroke="#c084fc" stroke-width="1.2"/>
+            <circle cx="19" cy="19" r="2.5" stroke="#c084fc" stroke-width="1.2"/>
+            <line x1="19" y1="21.5" x2="19" y2="24" stroke="#c084fc" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="tech-name">Baiting</div>
+        <span class="tech-tag">Cebo físico · USB drop</span>
+        <p class="tech-desc">Distribución estratégica de dispositivos trampa (USBs infectados, QR codes maliciosos, documentos señuelo) en parking, recepción y zonas comunes de la organización.</p>
+        <div class="tech-rate">
+          <div class="rate-label">Efectividad</div>
+          <div class="rate-bar"><div class="rate-fill fill-red" style="width:72%;animation-delay:.25s"></div></div>
+          <div class="rate-pct">72%</div>
+        </div>
+      </div>
+
+      <div class="tech-card">
+        <div class="tech-num">05</div>
+        <div class="tech-icon">
+          <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
+            <circle cx="13" cy="14" r="5" stroke="#c084fc" stroke-width="1.2"/>
+            <circle cx="25" cy="14" r="5" stroke="#c084fc" stroke-width="1.2" opacity=".5"/>
+            <path d="M4 30c0-4.97 4.03-9 9-9s9 4.03 9 9" stroke="#c084fc" stroke-width="1.2" stroke-linecap="round"/>
+            <path d="M22 22c1.7-.64 3.54-1 5-1 4.97 0 9 4.03 9 9" stroke="#c084fc" stroke-width="1.1" stroke-linecap="round" opacity=".5"/>
+          </svg>
+        </div>
+        <div class="tech-name">Tailgating & Piggybacking</div>
+        <span class="tech-tag">Acceso físico · Zonas restringidas</span>
+        <p class="tech-desc">Infiltración en instalaciones físicas aprovechando la cortesía humana: acceso a oficinas, CPDs y zonas seguras siguiendo a empleados o mediante uniformes e identidades falsas.</p>
+        <div class="tech-rate">
+          <div class="rate-label">Efectividad</div>
+          <div class="rate-bar"><div class="rate-fill fill-purple" style="width:68%;animation-delay:.3s"></div></div>
+          <div class="rate-pct">68%</div>
+        </div>
+      </div>
+
+      <div class="tech-card">
+        <div class="tech-num">06</div>
+        <div class="tech-icon">
+          <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
+            <rect x="3" y="7" width="32" height="24" rx="2" stroke="#c084fc" stroke-width="1.2" opacity=".4"/>
+            <path d="M3 12h32" stroke="#c084fc" stroke-width="1" opacity=".3"/>
+            <rect x="8" y="17" width="22" height="9" rx="1" stroke="#c084fc" stroke-width="1" opacity=".5"/>
+            <line x1="12" y1="22" x2="26" y2="22" stroke="#c084fc" stroke-width="1" stroke-linecap="round" opacity=".7"/>
+            <circle cx="30" cy="28" r="7" fill="#07040f" stroke="#ff4f6e" stroke-width="1.2"/>
+            <path d="M27 28.5l2 2 4-4" stroke="#ff4f6e" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="tech-name">Smishing & QRishing</div>
+        <span class="tech-tag">SMS · QR codes maliciosos</span>
+        <p class="tech-desc">Campañas de SMS fraudulentos y QR codes con destinos de phishing camuflados en materiales impresos, packaging y comunicaciones corporativas internas.</p>
+        <div class="tech-rate">
+          <div class="rate-label">Efectividad</div>
+          <div class="rate-bar"><div class="rate-fill fill-red" style="width:81%;animation-delay:.35s"></div></div>
+          <div class="rate-pct">81%</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PRINCIPIOS PSICOLÓGICOS -->
+  <div class="psych-section fade-in">
+    <div class="s-label">03 · psicología del ataque</div>
+    <h2 class="s-title">Principios de <em>Influencia</em></h2>
+
+    <div class="psych-grid">
+
+      <div class="psych-card">
+        <div class="psych-num">I</div>
+        <div class="psych-content">
+          <div class="psych-name">Autoridad</div>
+          <p class="psych-desc">Las personas obedecen instintivamente a figuras de autoridad percibida. Un atacante que se presenta como CEO, auditor o soporte de Microsoft obtiene colaboración inmediata sin verificación.</p>
+          <div class="psych-example">Email del "CEO" solicitando transferencia urgente fuera de horario</div>
+        </div>
+      </div>
+
+      <div class="psych-card">
+        <div class="psych-num">II</div>
+        <div class="psych-content">
+          <div class="psych-name">Urgencia & Escasez</div>
+          <p class="psych-desc">La presión temporal desactiva el pensamiento crítico. "El sistema se cae en 10 minutos", "necesito acceso ahora" — la urgencia artificial elimina los protocolos de verificación.</p>
+          <div class="psych-example">Llamada a las 11pm: incidente en producción, se necesitan credenciales ya</div>
+        </div>
+      </div>
+
+      <div class="psych-card">
+        <div class="psych-num">III</div>
+        <div class="psych-content">
+          <div class="psych-name">Reciprocidad</div>
+          <p class="psych-desc">Cuando alguien hace algo por nosotros, sentimos obligación de devolver el favor. Un atacante que "ayuda" a resolver un problema menor sienta las bases para solicitudes mayores.</p>
+          <div class="psych-example">Técnico que "arregla" el PC del empleado y pide acceso remoto de seguimiento</div>
+        </div>
+      </div>
+
+      <div class="psych-card">
+        <div class="psych-num">IV</div>
+        <div class="psych-content">
+          <div class="psych-name">Prueba Social</div>
+          <p class="psych-desc">Si otros hacen algo, debe ser correcto. "Todos en tu equipo ya lo han hecho", "tu manager me lo pidió antes" — la validación social reduce la resistencia ante peticiones inusuales.</p>
+          <div class="psych-example">Encuesta falsa de RRHH donde "todos los empleados ya han rellenado sus datos"</div>
+        </div>
+      </div>
+
+      <div class="psych-card">
+        <div class="psych-num">V</div>
+        <div class="psych-content">
+          <div class="psych-name">Simpatía & Rapport</div>
+          <p class="psych-desc">Somos más propensos a ayudar a quienes nos agradan. El atacante construye conexión emocional antes del ataque: intereses comunes, elogios, mirroring de personalidad.</p>
+          <div class="psych-example">Semanas de LinkedIn messages antes de solicitar acceso a documentos internos</div>
+        </div>
+      </div>
+
+      <div class="psych-card">
+        <div class="psych-num">VI</div>
+        <div class="psych-content">
+          <div class="psych-name">Compromiso & Coherencia</div>
+          <p class="psych-desc">Una vez que alguien toma una pequeña acción, tiende a mantener coherencia con ella. El pie en la puerta: pequeñas peticiones que escalan progresivamente hasta el objetivo real.</p>
+          <div class="psych-example">Confirmar nombre y departamento → cargo → enviar "documento interno" por email</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- LIFECYCLE -->
+  <div class="lifecycle-section fade-in">
+    <div class="s-label">04 · ciclo de ataque</div>
+    <h2 class="s-title">Anatomía de una <em>Operación</em></h2>
+
+    <div class="lifecycle">
+      <div class="lc-step">
+        <div class="lc-node"><span class="lc-n">1</span></div>
+        <div class="lc-name">Reconocimiento</div>
+        <p class="lc-desc">OSINT del objetivo: LinkedIn, redes sociales, organigramas, filtraciones previas y análisis de presencia digital.</p>
+      </div>
+      <div class="lc-step">
+        <div class="lc-node"><span class="lc-n">2</span></div>
+        <div class="lc-name">Construcción</div>
+        <p class="lc-desc">Creación del pretexto, identidades sintéticas, dominios typosquatting y materiales de la campaña.</p>
+      </div>
+      <div class="lc-step">
+        <div class="lc-node"><span class="lc-n">3</span></div>
+        <div class="lc-name">Contacto</div>
+        <p class="lc-desc">Ejecución del vector elegido: envío de phishing, llamadas de vishing o acceso físico con el pretexto preparado.</p>
+      </div>
+      <div class="lc-step">
+        <div class="lc-node"><span class="lc-n">4</span></div>
+        <div class="lc-name">Explotación</div>
+        <p class="lc-desc">Extracción de credenciales, acceso a sistemas, instalación de acceso remoto o filtración de información sensible.</p>
+      </div>
+      <div class="lc-step">
+        <div class="lc-node"><span class="lc-n">5</span></div>
+        <div class="lc-name">Informe</div>
+        <p class="lc-desc">Documentación de vectores exitosos, empleados comprometidos y recomendaciones de formación y control.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ESCENARIOS -->
+  <div class="scenarios-section fade-in">
+    <div class="s-label">05 · escenarios reales</div>
+    <h2 class="s-title">Campañas <em>Simuladas</em></h2>
+
+    <div class="scenario-list">
+
+      <div class="scenario-item">
+        <div class="scenario-left">
+          <div class="scenario-type">Campaña</div>
+          <div class="scenario-name">CEO Fraud & BEC</div>
+          <div class="scenario-risk">
+            <span class="risk-dot risk-critical"></span> RIESGO CRÍTICO
+          </div>
+        </div>
+        <div class="scenario-right">
+          <p class="scenario-desc">Suplantación del CEO o CFO mediante dominio similar para solicitar transferencias urgentes, cambios de datos bancarios de proveedores o acceso a información financiera confidencial.</p>
+          <div class="scenario-steps">
+            <span class="step-chip">OSINT ejecutivos</span>
+            <span class="step-chip">Typosquatting dominio</span>
+            <span class="step-chip">Email spoofing</span>
+            <span class="step-chip">Urgencia + autoridad</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="scenario-item">
+        <div class="scenario-left">
+          <div class="scenario-type">Campaña</div>
+          <div class="scenario-name">IT Helpdesk Impersonation</div>
+          <div class="scenario-risk">
+            <span class="risk-dot risk-critical"></span> RIESGO CRÍTICO
+          </div>
+        </div>
+        <div class="scenario-right">
+          <p class="scenario-desc">Suplantación del soporte técnico interno mediante llamadas y emails fabricados para obtener credenciales, instalar software de "diagnóstico" o resetear MFA con pretextos de incidentes.</p>
+          <div class="scenario-steps">
+            <span class="step-chip">Caller ID spoofing</span>
+            <span class="step-chip">Portales de login falsos</span>
+            <span class="step-chip">Remote access tools</span>
+            <span class="step-chip">MFA bypass</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="scenario-item">
+        <div class="scenario-left">
+          <div class="scenario-type">Campaña</div>
+          <div class="scenario-name">Vendor / Supply Chain</div>
+          <div class="scenario-risk">
+            <span class="risk-dot risk-high"></span> RIESGO ALTO
+          </div>
+        </div>
+        <div class="scenario-right">
+          <p class="scenario-desc">Suplantación de proveedores de confianza (Microsoft, AWS, Salesforce, bancos) para solicitar actualización de credenciales, acceso a integraciones o compartir documentos en portales falsos.</p>
+          <div class="scenario-steps">
+            <span class="step-chip">Páginas de login clonadas</span>
+            <span class="step-chip">Dominios similares</span>
+            <span class="step-chip">Credenciales robadas</span>
+            <span class="step-chip">Lateral movement</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="scenario-item">
+        <div class="scenario-left">
+          <div class="scenario-type">Campaña</div>
+          <div class="scenario-name">USB Drop & Baiting</div>
+          <div class="scenario-risk">
+            <span class="risk-dot risk-medium"></span> RIESGO MEDIO
+          </div>
+        </div>
+        <div class="scenario-right">
+          <p class="scenario-desc">Distribución de dispositivos USB etiquetados como "Nóminas 2025" o "Confidencial — RRHH" en zonas de acceso de la empresa. Medición de tasa de inserción y ejecución automática.</p>
+          <div class="scenario-steps">
+            <span class="step-chip">USB payloads</span>
+            <span class="step-chip">Tracking de ejecución</span>
+            <span class="step-chip">QR codes trampa</span>
+            <span class="step-chip">Beacon callback</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- DELIVERABLES -->
+  <div class="del-section fade-in">
+    <div class="s-label">06 · entregables</div>
+    <h2 class="s-title">Qué <em>Recibes</em></h2>
+
+    <div class="del-grid">
+      <div class="del-cell">
+        <div class="del-icon-wrap">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M12 3C8.13 3 5 6.13 5 10c0 2.38 1.19 4.47 3 5.74V17a1 1 0 001 1h6a1 1 0 001-1v-1.26C17.81 14.47 19 12.38 19 10c0-3.87-3.13-7-7-7z" stroke="#c084fc" stroke-width="1.2"/>
+            <line x1="9" y1="21" x2="15" y2="21" stroke="#c084fc" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="del-name">Informe Ejecutivo</div>
+        <p class="del-desc">Resumen de exposición humana, vectores más efectivos y riesgo de negocio, orientado a dirección y CISO.</p>
+      </div>
+
+      <div class="del-cell">
+        <div class="del-icon-wrap">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="3" width="18" height="18" rx="2" stroke="#c084fc" stroke-width="1.2" opacity=".5"/>
+            <line x1="7" y1="8" x2="17" y2="8" stroke="#c084fc" stroke-width="1.1" stroke-linecap="round"/>
+            <line x1="7" y1="12" x2="17" y2="12" stroke="#c084fc" stroke-width="1.1" stroke-linecap="round"/>
+            <line x1="7" y1="16" x2="12" y2="16" stroke="#c084fc" stroke-width="1.1" stroke-linecap="round" opacity=".5"/>
+          </svg>
+        </div>
+        <div class="del-name">Informe Técnico</div>
+        <p class="del-desc">Detalle de cada campaña: objetivos comprometidos, capturas de pantalla, transcripciones y cadena completa del ataque.</p>
+      </div>
+
+      <div class="del-cell">
+        <div class="del-icon-wrap">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <circle cx="9" cy="7" r="3" stroke="#c084fc" stroke-width="1.2"/>
+            <path d="M3 20c0-3.31 2.69-6 6-6" stroke="#c084fc" stroke-width="1.2" stroke-linecap="round"/>
+            <path d="M16 11l2 2 4-4" stroke="#c084fc" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="del-name">Métricas de Concienciación</div>
+        <p class="del-desc">Tasa de click, tasa de credenciales enviadas, tiempo de respuesta y comparativa departamental para medir el nivel de vulnerabilidad humana.</p>
+      </div>
+
+      <div class="del-cell">
+        <div class="del-icon-wrap">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <rect x="2" y="3" width="20" height="14" rx="2" stroke="#c084fc" stroke-width="1.2" opacity=".5"/>
+            <line x1="8" y1="21" x2="16" y2="21" stroke="#c084fc" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="12" y1="17" x2="12" y2="21" stroke="#c084fc" stroke-width="1.2" stroke-linecap="round"/>
+            <path d="M7 10l3 3 7-6" stroke="#c084fc" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="del-name">Taller de Concienciación</div>
+        <p class="del-desc">Sesión formativa post-engagement con el equipo para mostrar los ataques reales usados y cómo identificarlos en el futuro.</p>
+      </div>
+    </div>
+  </div>
+
+      <div class="awareness-box">
+        <div class="awareness-title">¿Ya hiciste el test?</div>
+        <div class="awareness-sub">// Programa de concienciación</div>
+        <ul class="awareness-list">
+          <li>Simulaciones mensuales de phishing</li>
+          <li>Módulos de formación interactiva</li>
+          <li>Dashboard de progreso por equipo</li>
+          <li>Alertas de empleados de alto riesgo</li>
+          <li>Certificación de concienciación</li>
+          <li>Integración con SIEM y SOAR</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">OFFENSIVE<span style="opacity:.3">::</span>CORE — Human Vector Division <span class="cursor-blink"></span></div>
+  <div class="footer-copy">© 2015 Offensive Core S.L. · Ethical Hacking</div>
+</footer>
+
+<script>
+// ─── CANVAS BACKGROUND ───
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+resize();
+window.addEventListener('resize', resize);
+
+// Nodes + connections (social network effect)
+const nodes = Array.from({length:55}, () => ({
+  x: Math.random() * innerWidth,
+  y: Math.random() * innerHeight,
+  vx: (Math.random() - .5) * .35,
+  vy: (Math.random() - .5) * .35,
+  r: Math.random() * 2.5 + .8,
+  a: Math.random() * .35 + .08,
+  compromised: Math.random() > .8
+}));
+
+// Floating characters
+const chars = ['×','∅','◈','⊗','▲','◆','⬡','⟨','⟩','⊕'];
+const floaters = Array.from({length:20}, () => ({
+  char: chars[Math.floor(Math.random() * chars.length)],
+  x: Math.random() * innerWidth,
+  y: Math.random() * innerHeight,
+  speed: Math.random() * .4 + .1,
+  a: Math.random() * 0.06 + 0.01,
+  size: Math.floor(Math.random() * 8) + 10
+}));
+
+function drawBg() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Subtle radial gradient at center
+  const grad = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, canvas.width * .6);
+  grad.addColorStop(0, 'rgba(74,26,122,0.06)');
+  grad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,canvas.width, canvas.height);
+
+  // Connections between nearby nodes
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i+1; j < nodes.length; j++) {
+      const dx = nodes[i].x - nodes[j].x;
+      const dy = nodes[i].y - nodes[j].y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < 130) {
+        const alpha = (1 - dist/130) * 0.06;
+        ctx.beginPath();
+        ctx.moveTo(nodes[i].x, nodes[i].y);
+        ctx.lineTo(nodes[j].x, nodes[j].y);
+        ctx.strokeStyle = nodes[i].compromised || nodes[j].compromised
+          ? `rgba(255,79,110,${alpha * 1.5})`
+          : `rgba(192,132,252,${alpha})`;
+        ctx.lineWidth = .5;
+        ctx.stroke();
+      }
+    }
+  }
+
+  // Nodes
+  nodes.forEach(n => {
+    n.x += n.vx; n.y += n.vy;
+    if (n.x < 0) n.x = canvas.width;
+    if (n.x > canvas.width) n.x = 0;
+    if (n.y < 0) n.y = canvas.height;
+    if (n.y > canvas.height) n.y = 0;
+
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, n.r, 0, Math.PI*2);
+    ctx.fillStyle = n.compromised
+      ? `rgba(255,79,110,${n.a})`
+      : `rgba(192,132,252,${n.a})`;
+    ctx.fill();
+  });
+
+  // Floating chars
+  floaters.forEach(f => {
+    f.y -= f.speed;
+    if (f.y < -20) f.y = canvas.height + 20;
+    ctx.font = `${f.size}px Playfair Display, serif`;
+    ctx.fillStyle = `rgba(192,132,252,${f.a})`;
+    ctx.fillText(f.char, f.x, f.y);
+  });
+}
+
+setInterval(drawBg, 45);
+
+// ─── COUNTER ANIMATION ───
+function countUp(el) {
+  const target = parseInt(el.dataset.target);
+  const suffix = el.dataset.suffix || '';
+  let cur = 0;
+  const step = Math.max(target / 55, 1);
+  const t = setInterval(() => {
+    cur = Math.min(cur + step, target);
+    el.textContent = Math.round(cur) + suffix;
+    if (cur >= target) clearInterval(t);
+  }, 22);
+}
+
+// ─── INTERSECTION OBSERVER ───
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      entry.target.querySelectorAll('[data-target]').forEach(countUp);
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+
 </body>
 </html>
