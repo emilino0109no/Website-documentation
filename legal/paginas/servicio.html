@@ -1,11 +1,532 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Términos de Servicio — Offensive Core</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="icon" href="../../imagenes/Offensive_Core.png" type="image/png">
+<style>
+  :root {
+    --green: #00ff41;
+    --green-dim: #00cc33;
+    --green-dark: #003311;
+    --green-glow: rgba(0,255,65,0.15);
+    --bg: #020a02;
+    --bg2: #060f06;
+    --text: #b0ffb8;
+    --border: rgba(0,255,65,0.25);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    line-height: 1.8;
+    cursor: default;
+    overflow-x: hidden;
+  }
+
+  /* Scanlines overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.15) 2px,
+      rgba(0,0,0,0.15) 4px
+    );
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  /* Matrix rain canvas */
+  #matrix {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    opacity: 0.07;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 60px 30px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    text-align: center;
+    margin-bottom: 60px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  .logo-line {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(28px, 6vw, 52px);
+    font-weight: 900;
+    color: var(--green);
+    text-shadow:
+      0 0 10px var(--green),
+      0 0 30px var(--green),
+      0 0 60px rgba(0,255,65,0.4);
+    letter-spacing: 6px;
+    animation: flicker 6s infinite;
+  }
+
+  @keyframes flicker {
+    0%,95%,100% { opacity: 1; }
+    96% { opacity: 0.85; }
+    97% { opacity: 1; }
+    98% { opacity: 0.7; }
+    99% { opacity: 1; }
+  }
+
+  .tagline {
+    margin-top: 8px;
+    color: var(--green-dim);
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+  }
+
+  .doc-meta {
+    margin-top: 20px;
+    font-size: 11px;
+    color: rgba(0,255,65,0.5);
+  }
+
+  .doc-meta span { color: var(--green); }
+
+  /* ── TERMINAL PROMPT ── */
+  .terminal-prompt {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--green);
+    padding: 16px 20px;
+    margin-bottom: 40px;
+    font-size: 12px;
+    color: var(--green-dim);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .terminal-prompt::before {
+    content: '>';
+    color: var(--green);
+    margin-right: 8px;
+    animation: blink 1s step-end infinite;
+  }
+
+  @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0; } }
+
+  /* ── SECTION ── */
+  section {
+    margin-bottom: 50px;
+    border: 1px solid var(--border);
+    background: linear-gradient(135deg, var(--bg2) 0%, rgba(0,20,5,0.6) 100%);
+    padding: 30px;
+    position: relative;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+
+  section:hover {
+    border-color: rgba(0,255,65,0.5);
+    box-shadow: 0 0 20px rgba(0,255,65,0.08), inset 0 0 30px rgba(0,255,65,0.03);
+  }
+
+  section::before {
+    content: attr(data-num);
+    position: absolute;
+    top: -1px; right: 20px;
+    background: var(--green);
+    color: #000;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 10px;
+    letter-spacing: 2px;
+  }
+
+  h2 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--green);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    text-shadow: 0 0 8px rgba(0,255,65,0.4);
+  }
+
+  p { margin-bottom: 12px; color: var(--text); }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 12px;
+  }
+
+  ul li {
+    padding: 5px 0 5px 20px;
+    position: relative;
+    color: var(--text);
+  }
+
+  ul li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: var(--green);
+  }
+
+  strong { color: var(--green); font-weight: normal; }
+
+  /* ── WARNING BOX ── */
+  .warning {
+    background: rgba(0,255,65,0.05);
+    border: 1px solid var(--green);
+    padding: 15px 20px;
+    margin: 16px 0;
+    font-size: 12px;
+    color: var(--green);
+    position: relative;
+  }
+
+  .warning::before {
+    content: '⚠ AVISO: ';
+    font-weight: bold;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+  }
+
+  /* ── CONTACT BLOCK ── */
+  .contact-block {
+    background: var(--green-dark);
+    border: 1px solid var(--green);
+    padding: 20px 25px;
+    margin-top: 16px;
+    box-shadow: 0 0 30px rgba(0,255,65,0.1);
+  }
+
+  .contact-block p { color: var(--green); }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding-top: 40px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: rgba(0,255,65,0.35);
+    letter-spacing: 2px;
+  }
+
+  footer .brand { color: var(--green); }
+
+  /* ── TOC ── */
+  .toc {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 25px 30px;
+    margin-bottom: 50px;
+  }
+
+  .toc h3 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    color: var(--green);
+    letter-spacing: 3px;
+    margin-bottom: 15px;
+  }
+
+  .toc ol {
+    list-style: none;
+    counter-reset: toc;
+    padding: 0;
+  }
+
+  .toc ol li {
+    counter-increment: toc;
+    padding: 4px 0;
+  }
+
+  .toc ol li::before {
+    content: counter(toc, decimal-leading-zero) '. ';
+    color: var(--green);
+    font-size: 11px;
+  }
+
+  .toc a {
+    color: var(--text);
+    text-decoration: none;
+    font-size: 12px;
+    transition: color 0.2s;
+  }
+
+  .toc a:hover { color: var(--green); text-shadow: 0 0 8px rgba(0,255,65,0.5); }
+
+  /* Scroll indicator */
+  .scroll-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 2px;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    z-index: 1000;
+    transition: width 0.1s;
+    width: 0%;
+  }
+</style>
 </head>
 <body>
-    
+
+<div class="scroll-bar" id="scrollBar"></div>
+<canvas id="matrix"></canvas>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo-line">OFFENSIVE CORE</div>
+    <div class="tagline">Ethical Hacking &amp; Cybersecurity Solutions</div>
+    <div class="doc-meta">
+      DOCUMENTO: <span>TERMS-OF-SERVICE-v2.4</span> &nbsp;|&nbsp;
+      ÚLTIMA REVISIÓN: <span>2026-01-24</span> &nbsp;|&nbsp;
+      ESTADO: <span>ACTIVO</span>
+    </div>
+  </header>
+
+  <!-- TERMINAL INTRO -->
+  <div class="terminal-prompt">
+    Al acceder y utilizar los servicios de Offensive Core, usted acepta estar legalmente vinculado por los presentes Términos de Servicio. Lea detenidamente antes de continuar.
+  </div>
+
+  <!-- TOC -->
+  <div class="toc">
+    <h3>// ÍNDICE DE CONTENIDOS</h3>
+    <ol>
+      <li><a href="#s1">Aceptación de los Términos</a></li>
+      <li><a href="#s2">Descripción de Servicios</a></li>
+      <li><a href="#s3">Uso Ético y Autorización</a></li>
+      <li><a href="#s4">Conducta Prohibida</a></li>
+      <li><a href="#s5">Confidencialidad y NDA</a></li>
+      <li><a href="#s6">Propiedad Intelectual</a></li>
+      <li><a href="#s7">Responsabilidad y Limitaciones</a></li>
+      <li><a href="#s8">Pago y Facturación</a></li>
+      <li><a href="#s9">Privacidad y Datos</a></li>
+      <li><a href="#s10">Terminación del Servicio</a></li>
+      <li><a href="#s11">Jurisdicción y Ley Aplicable</a></li>
+    </ol>
+  </div>
+
+  <!-- SECCIÓN 1 -->
+  <section id="s1" data-num="01">
+    <h2>Aceptación de los Términos</h2>
+    <p>Al contratar, acceder o utilizar cualquier servicio ofrecido por <strong>Offensive Core</strong> ("la Empresa"), usted (el "Cliente") declara haber leído, comprendido y aceptado los presentes Términos de Servicio en su totalidad, así como nuestra Política de Privacidad.</p>
+    <p>Si actúa en nombre de una organización, declara tener la autoridad legal para vincular a dicha entidad con estos términos. En caso contrario, no deberá utilizar nuestros servicios.</p>
+    <p>Nos reservamos el derecho de modificar estos términos en cualquier momento. Los cambios serán notificados con al menos <strong>15 días de anticipación</strong> mediante correo electrónico o publicación en nuestro portal. El uso continuado de los servicios implica la aceptación de los términos actualizados.</p>
+  </section>
+
+  <!-- SECCIÓN 2 -->
+  <section id="s2" data-num="02">
+    <h2>Descripción de Servicios</h2>
+    <p><strong>Offensive Core</strong> es una empresa especializada en ciberseguridad ofensiva ética. Nuestros servicios incluyen, pero no se limitan a:</p>
+    <ul>
+      <li>Pruebas de penetración (Pentesting) en infraestructura de red, aplicaciones web y móviles</li>
+      <li>Red Team y simulación de adversarios (APT Simulation)</li>
+      <li>Análisis de vulnerabilidades y gestión de riesgos</li>
+      <li>Auditorías de seguridad y revisión de código fuente</li>
+      <li>Ingeniería social controlada y phishing simulado</li>
+      <li>Formación y capacitación en ciberseguridad ofensiva</li>
+      <li>Desarrollo de exploits con fines defensivos y de investigación</li>
+      <li>Consultoría en arquitectura de seguridad</li>
+    </ul>
+    <p>Todos los servicios se realizan exclusivamente dentro del marco legal vigente y bajo el principio de <strong>hacking ético</strong>, con autorización previa y documentada del Cliente.</p>
+  </section>
+
+  <!-- SECCIÓN 3 -->
+  <section id="s3" data-num="03">
+    <h2>Uso Ético y Autorización</h2>
+    <div class="warning">
+      Todo engagement requiere un documento de autorización firmado antes del inicio de cualquier actividad técnica. Ninguna acción será ejecutada sin este requisito.
+    </div>
+    <p>El principio fundamental que rige todas las operaciones de <strong>Offensive Core</strong> es el consentimiento explícito. Antes de comenzar cualquier evaluación técnica, el Cliente deberá:</p>
+    <ul>
+      <li>Firmar el <strong>Documento de Alcance (Scope of Work)</strong> detallando los sistemas autorizados</li>
+      <li>Proveer evidencia de propiedad o autorización legal sobre los sistemas a evaluar</li>
+      <li>Designar un punto de contacto técnico durante toda la evaluación</li>
+      <li>Definir ventanas de tiempo permitidas para las pruebas</li>
+    </ul>
+    <p>Cualquier actividad fuera del alcance acordado será inmediatamente suspendida y reportada al Cliente. <strong>Offensive Core</strong> no realizará pruebas sobre sistemas de terceros sin la debida cadena de autorizaciones legales.</p>
+  </section>
+
+  <!-- SECCIÓN 4 -->
+  <section id="s4" data-num="04">
+    <h2>Conducta Prohibida</h2>
+    <p>El Cliente acepta que los servicios de <strong>Offensive Core</strong> no serán utilizados para:</p>
+    <ul>
+      <li>Atacar, comprometer o acceder a sistemas sin autorización del propietario legítimo</li>
+      <li>Realizar actividades ilegales bajo cualquier jurisdicción aplicable</li>
+      <li>Distribuir malware, ransomware o cualquier código malicioso con fines dañinos</li>
+      <li>Espionaje industrial, robo de información confidencial o extorsión</li>
+      <li>Eludir medidas de seguridad con fines distintos a los acordados en el contrato</li>
+      <li>Compartir herramientas, exploits o metodologías provistas por Offensive Core con terceros no autorizados</li>
+      <li>Cualquier actividad que pueda causar daño, interrupción o pérdida de datos no contemplada en el alcance</li>
+    </ul>
+    <div class="warning">
+      La violación de esta cláusula resultará en la terminación inmediata del contrato, reporte a las autoridades competentes y acciones legales correspondientes.
+    </div>
+  </section>
+
+  <!-- SECCIÓN 5 -->
+  <section id="s5" data-num="05">
+    <h2>Confidencialidad y NDA</h2>
+    <p>Ambas partes reconocen que durante la prestación de servicios se compartirá información sensible y confidencial. <strong>Offensive Core</strong> se compromete a:</p>
+    <ul>
+      <li>Mantener estricta confidencialidad sobre toda la información del Cliente y sus sistemas</li>
+      <li>No divulgar vulnerabilidades encontradas a terceros sin consentimiento previo y escrito</li>
+      <li>Eliminar o devolver toda la información sensible al finalizar el engagement, según acuerdo</li>
+      <li>Limitar el acceso a la información del Cliente solo al personal directamente involucrado</li>
+    </ul>
+    <p>Todos los miembros del equipo de <strong>Offensive Core</strong> tienen firmados acuerdos de no divulgación (NDA) internos. Un NDA específico entre Offensive Core y el Cliente puede ser solicitado y firmado antes del inicio de los servicios.</p>
+    <p>La obligación de confidencialidad permanecerá vigente por un período de <strong>5 años</strong> después de la terminación del contrato.</p>
+  </section>
+
+  <!-- SECCIÓN 6 -->
+  <section id="s6" data-num="06">
+    <h2>Propiedad Intelectual</h2>
+    <p>Los reportes, metodologías, herramientas propietarias, scripts y documentación desarrollados por <strong>Offensive Core</strong> son propiedad exclusiva de la Empresa, salvo acuerdo distinto por escrito.</p>
+    <p>El Cliente recibirá una <strong>licencia de uso no exclusiva</strong> sobre los entregables del engagement para uso interno en su organización. Esta licencia no permite:</p>
+    <ul>
+      <li>Redistribución o venta de los entregables a terceros</li>
+      <li>Modificación y presentación como trabajo propio</li>
+      <li>Uso de herramientas propietarias fuera del contexto del engagement acordado</li>
+    </ul>
+    <p>Las vulnerabilidades de día cero (0-days) descubiertas durante un engagement serán reportadas responsablemente al Cliente y, cuando aplique, al fabricante del sistema afectado, siguiendo prácticas de <strong>Responsible Disclosure</strong>.</p>
+  </section>
+
+  <!-- SECCIÓN 7 -->
+  <section id="s7" data-num="07">
+    <h2>Responsabilidad y Limitaciones</h2>
+    <div class="warning">
+      La ciberseguridad no garantiza inmunidad total. Ningún servicio puede garantizar la eliminación del 100% de las vulnerabilidades.
+    </div>
+    <p><strong>Offensive Core</strong> actuará con la máxima diligencia profesional. No obstante, la Empresa no será responsable por:</p>
+    <ul>
+      <li>Daños derivados de sistemas o configuraciones fuera del alcance definido</li>
+      <li>Interrupciones de servicio no contempladas como riesgo aceptado en el acuerdo</li>
+      <li>Vulnerabilidades descubiertas posteriormente a la conclusión del engagement</li>
+      <li>Decisiones del Cliente basadas en los hallazgos del reporte</li>
+      <li>Incidentes de seguridad causados por terceros no relacionados con el engagement</li>
+    </ul>
+    <p>La responsabilidad máxima de <strong>Offensive Core</strong> ante cualquier reclamación no excederá el monto total facturado por el engagement en cuestión.</p>
+  </section>
+
+  <!-- SECCIÓN 8 -->
+  <section id="s8" data-num="08">
+    <h2>Pago y Facturación</h2>
+    <p>Las condiciones de pago serán especificadas en la propuesta comercial correspondiente. En términos generales:</p>
+    <ul>
+      <li>Se requiere un <strong>50% de anticipo</strong> antes del inicio de cualquier engagement</li>
+      <li>El saldo restante es pagadero al momento de entrega del reporte final</li>
+      <li>Los pagos se realizan por transferencia bancaria o los métodos acordados por escrito</li>
+      <li>Las facturas no pagadas en el plazo acordado generarán un cargo por mora del <strong>1.5% mensual</strong></li>
+      <li>El incumplimiento de pago autoriza a Offensive Core a suspender servicios y retener entregables pendientes</li>
+    </ul>
+    <p>Cualquier disputa sobre facturación deberá notificarse por escrito dentro de los <strong>10 días hábiles</strong> siguientes a la recepción de la factura.</p>
+  </section>
+
+  <!-- SECCIÓN 9 -->
+  <section id="s9" data-num="09">
+    <h2>Privacidad y Datos</h2>
+    <p><strong>Offensive Core</strong> recopila y procesa únicamente los datos estrictamente necesarios para la prestación de los servicios contratados. Nuestra política de datos garantiza:</p>
+    <ul>
+      <li>Los datos del Cliente no serán vendidos, alquilados ni cedidos a terceros</li>
+      <li>El almacenamiento de datos se realiza en entornos seguros y cifrados</li>
+      <li>El Cliente puede solicitar la eliminación de sus datos en cualquier momento</li>
+      <li>Cumplimos con las normativas aplicables de protección de datos (GDPR, Ley Federal de Protección de Datos, según jurisdicción)</li>
+    </ul>
+    <p>Durante los engagements, cualquier dato personal de terceros encontrado en los sistemas del Cliente será tratado con la misma confidencialidad y solo documentado en la medida necesaria para evidenciar el hallazgo.</p>
+  </section>
+
+  <!-- SECCIÓN 10 -->
+  <section id="s10" data-num="10">
+    <h2>Terminación del Servicio</h2>
+    <p>Cualquiera de las partes podrá dar por terminado el contrato bajo las siguientes condiciones:</p>
+    <ul>
+      <li><strong>Por el Cliente:</strong> Con aviso por escrito con al menos 5 días hábiles de anticipación. Se facturarán los servicios realizados hasta la fecha de terminación.</li>
+      <li><strong>Por Offensive Core:</strong> En caso de incumplimiento de los presentes términos, falta de pago, o solicitud de actividades ilegales o no éticas, con efecto inmediato.</li>
+      <li><strong>Por mutuo acuerdo:</strong> Las partes podrán acordar la terminación anticipada en los términos que estimen convenientes.</li>
+    </ul>
+    <p>Tras la terminación, las obligaciones de confidencialidad, propiedad intelectual y las limitaciones de responsabilidad permanecerán vigentes según lo establecido en sus respectivas cláusulas.</p>
+  </section>
+
+  <!-- SECCIÓN 11 -->
+  <section id="s11" data-num="11">
+    <h2>Jurisdicción y Ley Aplicable</h2>
+    <p>Los presentes Términos de Servicio se regirán e interpretarán de conformidad con las leyes aplicables en la jurisdicción donde se formalice el contrato de servicios.</p>
+    <p>Cualquier controversia derivada de estos términos se resolverá, en primera instancia, mediante negociación directa entre las partes. De no alcanzarse un acuerdo en un plazo de <strong>30 días</strong>, se someterá a arbitraje o a los tribunales competentes de la jurisdicción acordada.</p>
+    <p>Si alguna disposición de estos términos fuera declarada inválida o inaplicable, el resto de las disposiciones continuará plenamente vigente.</p>
+  </section>
+
+
+  <footer>
+    <p>© 2015 <span class="brand">OFFENSIVE CORE</span> — TODOS LOS DERECHOS RESERVADOS</p>
+    <p style="margin-top:8px;">HACK THE PLANET // STAY ETHICAL // STAY LEGAL</p>
+  </footer>
+
+</div>
+
+<script>
+// Matrix rain
+const canvas = document.getElementById('matrix');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+const cols = Math.floor(canvas.width / 16);
+const drops = Array(cols).fill(1);
+function drawMatrix() {
+  ctx.fillStyle = 'rgba(2, 10, 2, 0.05)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#00ff41';
+  ctx.font = '14px Share Tech Mono';
+  drops.forEach((y, i) => {
+    const char = String.fromCharCode(0x30A0 + Math.random() * 96);
+    ctx.fillText(char, i * 16, y * 16);
+    if (y * 16 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+    drops[i]++;
+  });
+}
+setInterval(drawMatrix, 50);
+
+window.addEventListener('resize', () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+
+// Scroll progress bar
+window.addEventListener('scroll', () => {
+  const scrollTop = document.documentElement.scrollTop;
+  const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  document.getElementById('scrollBar').style.width = (scrollTop / scrollHeight * 100) + '%';
+});
+</script>
 </body>
 </html>
