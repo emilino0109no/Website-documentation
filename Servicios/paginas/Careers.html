@@ -1,11 +1,1411 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Careers — Offensive Core</title>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Barlow:ital,wght@0,300;0,400;0,500;1,700&display=swap" rel="stylesheet"/>
+  <link rel="icon" href="../../imagenes/Offensive_Core.png" type="image/png">
+  <style>
+    :root {
+      --red:       #c0392b;
+      --red-dim:   #8e1e14;
+      --red-bright:#e74c3c;
+      --red-xs:    #2d0a07;
+      --ink:       #0e0e0e;
+      --ink2:      #161616;
+      --ink3:      #1e1e1e;
+      --paper:     #f0ece4;
+      --paper-dim: #c8c2b8;
+      --paper-xs:  #7a7468;
+      --white:     #f8f5f0;
+      --mono:      'Courier Prime', monospace;
+      --display:   'Anton', sans-serif;
+      --body:      'Barlow', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--ink);
+      color: var(--paper-dim);
+      font-family: var(--body);
+      font-size: 15px;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* Halftone dot pattern overlay */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: radial-gradient(circle, rgba(240,236,228,0.04) 1px, transparent 1px);
+      background-size: 20px 20px;
+      pointer-events: none; z-index: 0;
+    }
+
+    #bg-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+
+    /* ─── EMERGENCY TAPE HEADER ─── */
+    .tape-header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+      height: 32px;
+      background: repeating-linear-gradient(
+        -55deg,
+        var(--red) 0px, var(--red) 18px,
+        #000 18px, #000 20px
+      );
+      display: flex; align-items: center; justify-content: center;
+      gap: 60px;
+    }
+
+    .tape-text {
+      font-family: var(--display); font-size: 0.72rem;
+      letter-spacing: 0.35em; color: #000;
+      background: var(--red); padding: 0 24px;
+      text-transform: uppercase;
+    }
+
+    /* ─── TOPBAR ─── */
+    .topbar {
+      position: fixed; top: 32px; left: 0; right: 0; z-index: 200;
+      height: 52px;
+      background: rgba(14,14,14,0.97);
+      border-bottom: 1px solid rgba(240,236,228,0.06);
+      display: flex; align-items: center; padding: 0 52px;
+      backdrop-filter: blur(8px);
+    }
+
+    .topbar-logo {
+      font-family: var(--display); font-size: 1rem;
+      letter-spacing: 0.14em; color: var(--paper);
+      text-transform: uppercase; flex: 1;
+    }
+
+    .topbar-logo span { color: var(--red); }
+
+    .topbar-nav {
+      display: flex; gap: 36px; list-style: none;
+      font-family: var(--mono); font-size: 0.6rem;
+      letter-spacing: 0.12em; text-transform: uppercase;
+    }
+
+    .topbar-nav a { color: var(--paper-xs); text-decoration: none; transition: color .2s; }
+    .topbar-nav a:hover, .topbar-nav a.active { color: var(--red); }
+
+    .topbar-openings {
+      margin-left: 36px; font-family: var(--mono); font-size: 0.58rem;
+      color: var(--red-dim); letter-spacing: 0.1em;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .open-blink {
+      width: 7px; height: 7px; background: var(--red);
+      border-radius: 50%; animation: openBlink .8s step-end infinite;
+    }
+
+    @keyframes openBlink { 50% { opacity: 0; } }
+
+    /* ─── HERO — FULL NEWSPAPER FRONT PAGE ─── */
+    .hero {
+      position: relative; z-index: 2;
+      padding: 120px 0 0;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      border-bottom: 3px solid var(--red);
+    }
+
+    .hero-masthead {
+      padding: 0 52px 24px;
+      border-bottom: 3px double rgba(240,236,228,0.12);
+      display: flex; align-items: baseline; gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .masthead-title {
+      font-family: var(--display); font-size: 0.75rem;
+      letter-spacing: 0.4em; text-transform: uppercase;
+      color: var(--paper-xs);
+    }
+
+    .masthead-sep { color: rgba(240,236,228,0.15); }
+
+    .masthead-date {
+      font-family: var(--mono); font-size: 0.6rem;
+      color: var(--paper-xs); letter-spacing: 0.1em;
+      opacity: .7;
+    }
+
+    .masthead-edition {
+      margin-left: auto; font-family: var(--mono); font-size: 0.58rem;
+      color: var(--red-dim); letter-spacing: 0.12em;
+    }
+
+    .hero-headline {
+      padding: 36px 52px 32px;
+      position: relative;
+    }
+
+    /* Ruling lines like newspaper */
+    .hero-headline::before, .hero-headline::after {
+      content: '';
+      position: absolute; left: 52px; right: 52px; height: 1px;
+      background: rgba(240,236,228,0.08);
+    }
+    .hero-headline::before { top: 0; }
+    .hero-headline::after  { bottom: 0; }
+
+    .headline-kicker {
+      font-family: var(--mono); font-size: 0.62rem;
+      color: var(--red); letter-spacing: 0.22em;
+      text-transform: uppercase; margin-bottom: 12px;
+    }
+
+    h1 {
+      font-family: var(--display);
+      font-size: clamp(4rem, 11vw, 11rem);
+      line-height: 0.86;
+      letter-spacing: -0.01em;
+      color: var(--white);
+      text-transform: uppercase;
+    }
+
+    h1 .red-word { color: var(--red); display: block; }
+    h1 .white-word { display: block; }
+    h1 .ghost-word {
+      display: block;
+      -webkit-text-stroke: 1px rgba(240,236,228,0.18);
+      color: transparent;
+    }
+
+    .hero-columns {
+      display: grid; grid-template-columns: 1fr 1fr 280px;
+      gap: 0;
+      border-top: 1px solid rgba(240,236,228,0.08);
+      flex: 1;
+    }
+
+    @media(max-width:950px) { .hero-columns { grid-template-columns: 1fr 1fr; } }
+    @media(max-width:650px) { .hero-columns { grid-template-columns: 1fr; } }
+
+    .hero-col {
+      padding: 32px 40px;
+      border-right: 1px solid rgba(240,236,228,0.08);
+    }
+
+    .hero-col:last-child { border-right: none; }
+
+    .col-label {
+      font-family: var(--mono); font-size: 0.55rem;
+      color: var(--red-dim); letter-spacing: 0.22em;
+      text-transform: uppercase; margin-bottom: 12px;
+      border-bottom: 1px solid rgba(192,57,43,0.2);
+      padding-bottom: 8px;
+    }
+
+    .hero-lede {
+      font-size: 1.1rem; font-weight: 500;
+      color: var(--paper); line-height: 1.55;
+      margin-bottom: 14px;
+    }
+
+    .hero-body-text {
+      font-size: 0.85rem; font-weight: 300;
+      color: var(--paper-xs); line-height: 1.7;
+    }
+
+    .hero-body-text strong { color: var(--paper-dim); font-weight: 500; }
+
+    /* Pull quote */
+    .pull-quote {
+      margin: 20px 0;
+      border-left: 3px solid var(--red);
+      padding-left: 16px;
+    }
+
+    .pq-text {
+      font-family: var(--mono); font-style: italic;
+      font-size: 0.9rem; color: var(--paper);
+      line-height: 1.45;
+    }
+
+    .pq-attr {
+      font-size: 0.65rem; color: var(--paper-xs);
+      margin-top: 6px; letter-spacing: 0.08em;
+    }
+
+    /* Stats column */
+    .stats-col {}
+
+    .stat-block {
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(240,236,228,0.06);
+    }
+
+    .stat-block:last-child { border-bottom: none; }
+
+    .sb-num {
+      font-family: var(--display); font-size: 2.4rem;
+      color: var(--red); line-height: 1;
+      margin-bottom: 2px;
+    }
+
+    .sb-label {
+      font-family: var(--mono); font-size: 0.55rem;
+      color: var(--paper-xs); letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    /* ─── OPENINGS ─── */
+    .openings-wrap {
+      position: relative; z-index: 2;
+    }
+
+    .openings-header {
+      padding: 60px 52px 40px;
+      display: grid; grid-template-columns: 1fr auto;
+      align-items: end; gap: 20px;
+      border-bottom: 1px solid rgba(240,236,228,0.06);
+    }
+
+    @media(max-width:700px) { .openings-header { grid-template-columns: 1fr; padding: 40px 22px 28px; } }
+
+    .oh-eyebrow {
+      font-family: var(--mono); font-size: 0.6rem;
+      color: var(--red-dim); letter-spacing: 0.28em;
+      text-transform: uppercase; margin-bottom: 10px;
+    }
+
+    .oh-title {
+      font-family: var(--display); font-size: clamp(2.5rem, 6vw, 5rem);
+      color: var(--white); text-transform: uppercase;
+      line-height: 0.92; letter-spacing: -0.01em;
+    }
+
+    .oh-count {
+      font-family: var(--display); font-size: 5rem;
+      color: rgba(192,57,43,0.12); line-height: 1;
+      text-align: right;
+    }
+
+    /* Filter */
+    .filter-row {
+      padding: 18px 52px;
+      display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+      border-bottom: 1px solid rgba(240,236,228,0.04);
+    }
+
+    @media(max-width:700px) { .filter-row { padding: 16px 22px; } }
+
+    .f-label {
+      font-family: var(--mono); font-size: 0.55rem;
+      color: var(--paper-xs); letter-spacing: 0.16em;
+      text-transform: uppercase; opacity: .6; margin-right: 6px;
+    }
+
+    .f-btn {
+      font-family: var(--mono); font-size: 0.58rem;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 6px 14px; background: transparent;
+      border: 1px solid rgba(240,236,228,0.1);
+      color: var(--paper-xs); cursor: pointer; transition: all .2s;
+    }
+
+    .f-btn:hover { border-color: var(--red); color: var(--red); }
+    .f-btn.active { background: var(--red); color: #000; border-color: var(--red); font-weight: 700; }
+
+    /* ─── JOB CARDS — MISSION BRIEFS ─── */
+    .jobs-grid {
+      display: grid; grid-template-columns: 1fr;
+      gap: 0;
+    }
+
+    .job-card {
+      border-bottom: 1px solid rgba(240,236,228,0.06);
+      transition: background .25s;
+      position: relative; overflow: hidden;
+    }
+
+    .job-card:hover { background: rgba(192,57,43,0.04); }
+
+    .job-card::before {
+      content: '';
+      position: absolute; left: 0; top: 0; bottom: 0;
+      width: 3px; background: transparent;
+      transition: background .25s;
+    }
+
+    .job-card:hover::before { background: var(--red); }
+
+    .job-inner {
+      display: grid; grid-template-columns: 100px 1fr auto;
+      gap: 0; min-height: 110px;
+    }
+
+    @media(max-width:800px) { .job-inner { grid-template-columns: 80px 1fr; } }
+    @media(max-width:550px) { .job-inner { grid-template-columns: 1fr; } }
+
+    /* Mission number panel */
+    .job-num-panel {
+      background: rgba(240,236,228,0.02);
+      border-right: 1px solid rgba(240,236,228,0.06);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 20px 10px; text-align: center;
+      transition: background .25s;
+    }
+
+    .job-card:hover .job-num-panel { background: rgba(192,57,43,0.06); }
+
+    .jn-mission {
+      font-family: var(--mono); font-size: 0.48rem;
+      color: var(--red-dim); letter-spacing: 0.16em;
+      text-transform: uppercase; margin-bottom: 4px;
+    }
+
+    .jn-num {
+      font-family: var(--display); font-size: 1.6rem;
+      color: rgba(240,236,228,0.2); line-height: 1;
+    }
+
+    .jn-status {
+      margin-top: 8px; width: 8px; height: 8px;
+      border-radius: 50%; background: var(--red);
+      box-shadow: 0 0 8px var(--red);
+      animation: openBlink 1.4s ease-in-out infinite;
+    }
+
+    /* Main job info */
+    .job-main { padding: 28px 36px; }
+
+    .job-header {
+      display: flex; align-items: flex-start;
+      gap: 16px; margin-bottom: 12px; flex-wrap: wrap;
+    }
+
+    .job-title {
+      font-family: var(--display); font-size: clamp(1.4rem, 3vw, 2.1rem);
+      color: var(--white); text-transform: uppercase;
+      letter-spacing: 0.01em; line-height: 1;
+    }
+
+    .job-tags {
+      display: flex; gap: 6px; flex-wrap: wrap;
+      align-items: center; margin-top: 3px;
+    }
+
+    .jtag {
+      font-family: var(--mono); font-size: 0.5rem;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 3px 9px; border: 1px solid;
+    }
+
+    .jt-red    { color: var(--red); border-color: rgba(192,57,43,.35); background: rgba(192,57,43,.04); }
+    .jt-paper  { color: var(--paper-dim); border-color: rgba(240,236,228,.12); background: transparent; }
+    .jt-hot    { color: #000; background: var(--red); border-color: var(--red); font-weight: 700; }
+
+    .job-desc {
+      font-size: 0.85rem; font-weight: 300;
+      color: var(--paper-xs); line-height: 1.65;
+      margin-bottom: 16px; max-width: 680px;
+    }
+
+    .job-req-row {
+      display: flex; gap: 20px; flex-wrap: wrap;
+    }
+
+    .req-item {
+      display: flex; align-items: center; gap: 7px;
+      font-family: var(--mono); font-size: 0.58rem;
+      color: var(--paper-xs); letter-spacing: 0.06em;
+    }
+
+    .req-icon { color: var(--red); font-size: 0.7rem; }
+
+    /* CTA panel */
+    .job-cta-panel {
+      border-left: 1px solid rgba(240,236,228,0.06);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 24px 32px; gap: 12px;
+      min-width: 180px;
+    }
+
+    @media(max-width:800px) { .job-cta-panel { display: none; } }
+
+    .job-deadline {
+      font-family: var(--mono); font-size: 0.52rem;
+      color: var(--paper-xs); letter-spacing: 0.1em;
+      text-align: center; opacity: .6;
+    }
+
+    .btn-apply {
+      font-family: var(--display); font-size: 0.8rem;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      padding: 12px 28px;
+      background: var(--red); color: var(--white);
+      border: none; cursor: pointer;
+      clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
+      transition: all .2s; text-decoration: none; display: block;
+    }
+
+    .btn-apply:hover { background: var(--red-bright); box-shadow: 0 0 24px rgba(192,57,43,.5); }
+
+    .btn-apply-ghost {
+      font-family: var(--display); font-size: 0.8rem;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      padding: 12px 28px;
+      background: transparent; color: var(--red);
+      border: 1px solid rgba(192,57,43,.4);
+      cursor: pointer; text-decoration: none; display: inline-block;
+      transition: all .2s;
+    }
+
+    .btn-apply-ghost:hover { background: rgba(192,57,43,.08); border-color: var(--red); }
+
+    /* ─── BENEFITS ─── */
+    .benefits-section {
+      position: relative; z-index: 2;
+      padding: 80px 52px;
+      border-top: 3px double rgba(240,236,228,0.08);
+    }
+
+    @media(max-width:700px) { .benefits-section { padding: 56px 22px; } }
+
+    .ben-header {
+      margin-bottom: 44px;
+    }
+
+    .ben-eyebrow {
+      font-family: var(--mono); font-size: 0.6rem;
+      color: var(--red-dim); letter-spacing: 0.28em;
+      text-transform: uppercase; margin-bottom: 10px;
+    }
+
+    .ben-eyebrow::before { content: '// '; opacity: .6; }
+
+    .ben-title {
+      font-family: var(--display); font-size: clamp(2.5rem, 6vw, 5rem);
+      color: var(--white); text-transform: uppercase;
+      line-height: 0.92; letter-spacing: -0.01em;
+    }
+
+    .ben-title span { color: var(--red); }
+
+    .ben-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 1px; background: rgba(240,236,228,0.05);
+    }
+
+    @media(max-width:900px) { .ben-grid { grid-template-columns: 1fr 1fr; } }
+    @media(max-width:500px) { .ben-grid { grid-template-columns: 1fr; } }
+
+    .ben-card {
+      background: var(--ink2); padding: 36px 28px;
+      position: relative; overflow: hidden;
+      transition: background .3s;
+    }
+
+    .ben-card:hover { background: var(--ink3); }
+
+    .ben-card::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+      background: var(--red); transform: scaleX(0); transition: transform .35s;
+    }
+
+    .ben-card:hover::after { transform: scaleX(1); }
+
+    .ben-num {
+      font-family: var(--display); font-size: 4rem;
+      color: rgba(192,57,43,0.07); position: absolute;
+      top: 6px; right: 16px; line-height: 1; pointer-events: none;
+    }
+
+    .ben-icon { margin-bottom: 18px; }
+
+    .ben-name {
+      font-family: var(--display); font-size: 1rem;
+      color: var(--paper); text-transform: uppercase;
+      letter-spacing: 0.06em; margin-bottom: 10px;
+    }
+
+    .ben-desc {
+      font-size: 0.82rem; font-weight: 300;
+      color: var(--paper-xs); line-height: 1.6;
+    }
+
+    /* ─── CULTURE ─── */
+    .culture-section {
+      position: relative; z-index: 2;
+      padding: 80px 52px;
+      background: rgba(192,57,43,0.04);
+      border-top: 1px solid rgba(192,57,43,0.12);
+      border-bottom: 1px solid rgba(192,57,43,0.12);
+    }
+
+    @media(max-width:700px) { .culture-section { padding: 56px 22px; } }
+
+    .culture-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 60px; align-items: start; margin-top: 44px;
+    }
+
+    @media(max-width:800px) { .culture-grid { grid-template-columns: 1fr; gap: 36px; } }
+
+    .culture-manifesto {
+      font-family: var(--mono); font-size: 0.88rem;
+      color: var(--paper-dim); line-height: 1.85;
+    }
+
+    .culture-manifesto p { margin-bottom: 18px; }
+    .culture-manifesto strong { color: var(--red); }
+    .culture-manifesto em { font-style: italic; color: var(--paper); }
+
+    .culture-nos {
+      list-style: none;
+    }
+
+    .cn-item {
+      display: flex; gap: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(240,236,228,0.05);
+      align-items: flex-start;
+    }
+
+    .cn-item:last-child { border-bottom: none; }
+
+    .cn-icon {
+      font-family: var(--display); font-size: 1rem;
+      color: var(--red); flex-shrink: 0; line-height: 1.4;
+    }
+
+    .cn-text { font-size: 0.84rem; color: var(--paper-xs); line-height: 1.6; font-weight: 300; }
+    .cn-text strong { color: var(--paper-dim); font-weight: 500; }
+
+    /* ─── PROCESS ─── */
+    .process-section {
+      position: relative; z-index: 2;
+      padding: 80px 52px;
+    }
+
+    @media(max-width:700px) { .process-section { padding: 56px 22px; } }
+
+    .process-steps {
+      display: grid; grid-template-columns: repeat(5, 1fr);
+      gap: 0; margin-top: 44px;
+      background: rgba(240,236,228,0.03);
+    }
+
+    @media(max-width:900px) { .process-steps { grid-template-columns: 1fr 1fr; } }
+    @media(max-width:500px) { .process-steps { grid-template-columns: 1fr; } }
+
+    .ps-step {
+      background: var(--ink2); padding: 30px 24px;
+      border-right: 1px solid rgba(240,236,228,0.04);
+      position: relative; transition: background .25s;
+    }
+
+    .ps-step:last-child { border-right: none; }
+    .ps-step:hover { background: var(--ink3); }
+
+    .ps-num {
+      font-family: var(--display); font-size: 3.5rem;
+      color: rgba(192,57,43,0.1); line-height: 1;
+      margin-bottom: 14px;
+    }
+
+    .ps-name {
+      font-family: var(--display); font-size: 0.88rem;
+      color: var(--paper); text-transform: uppercase;
+      letter-spacing: 0.08em; margin-bottom: 8px;
+    }
+
+    .ps-desc {
+      font-size: 0.78rem; font-weight: 300;
+      color: var(--paper-xs); line-height: 1.6;
+    }
+
+    .ps-time {
+      margin-top: 12px; font-family: var(--mono); font-size: 0.52rem;
+      color: var(--red-dim); letter-spacing: 0.12em;
+    }
+
+    /* ─── CTA ─── */
+    .cta-section {
+      position: relative; z-index: 2;
+      padding: 80px 52px;
+      border-top: 3px solid var(--red);
+      overflow: hidden;
+    }
+
+    @media(max-width:700px) { .cta-section { padding: 56px 22px; } }
+
+    .cta-section::before {
+      content: 'WANTED';
+      font-family: var(--display); font-size: 28rem;
+      color: rgba(192,57,43,0.04);
+      position: absolute; top: -100px; right: -60px;
+      line-height: 1; pointer-events: none;
+      letter-spacing: -0.03em;
+    }
+
+    .cta-inner {
+      display: grid; grid-template-columns: 1fr 360px;
+      gap: 80px; align-items: center; position: relative;
+    }
+
+    @media(max-width:900px) { .cta-inner { grid-template-columns: 1fr; gap: 44px; } }
+
+    .cta-title {
+      font-family: var(--display); font-size: clamp(2.5rem, 6vw, 5.5rem);
+      color: var(--white); text-transform: uppercase;
+      line-height: 0.92; letter-spacing: -0.01em; margin-bottom: 18px;
+    }
+
+    .cta-title span { color: var(--red); }
+
+    .cta-body {
+      font-size: 0.9rem; font-weight: 300;
+      color: var(--paper-xs); line-height: 1.72;
+      max-width: 500px; margin-bottom: 32px;
+    }
+
+    .cta-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+    /* Contact box */
+    .contact-box {
+      background: var(--ink2);
+      border: 1px solid rgba(240,236,228,0.08);
+      padding: 32px;
+    }
+
+    .cb-title {
+      font-family: var(--mono); font-size: 0.6rem;
+      color: var(--red-dim); letter-spacing: 0.22em;
+      text-transform: uppercase; margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(240,236,228,0.06);
+    }
+
+    .cb-row {
+      display: flex; gap: 14px; align-items: flex-start;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(240,236,228,0.04);
+    }
+
+    .cb-row:last-child { border-bottom: none; }
+
+    .cb-icon {
+      width: 28px; height: 28px; flex-shrink: 0;
+      border: 1px solid rgba(240,236,228,0.08);
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(192,57,43,0.06);
+    }
+
+    .cb-label {
+      font-family: var(--mono); font-size: 0.5rem;
+      color: var(--paper-xs); letter-spacing: 0.14em;
+      text-transform: uppercase; margin-bottom: 1px; opacity: .6;
+    }
+
+    .cb-val {
+      font-family: var(--mono); font-size: 0.78rem; color: var(--paper-dim);
+    }
+
+    .cb-val a { color: var(--red); text-decoration: none; }
+    .cb-val a:hover { text-decoration: underline; }
+
+    /* ─── FOOTER ─── */
+    footer {
+      position: relative; z-index: 2;
+      border-top: 1px solid rgba(240,236,228,0.06);
+      padding: 28px 52px;
+      display: flex; align-items: center;
+      justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    }
+
+    .footer-logo {
+      font-family: var(--display); font-size: 0.8rem;
+      color: rgba(240,236,228,0.2); letter-spacing: 0.12em;
+    }
+
+    .footer-links {
+      display: flex; gap: 24px; font-family: var(--mono);
+      font-size: 0.57rem; letter-spacing: 0.12em; text-transform: uppercase;
+    }
+
+    .footer-links a { color: var(--paper-xs); opacity: .4; text-decoration: none; transition: all .2s; }
+    .footer-links a:hover { opacity: 1; color: var(--red); }
+
+    .footer-copy { font-family: var(--mono); font-size: 0.54rem; color: #2a1a18; letter-spacing: .06em; }
+
+    .cursor-blink::after { content: '█'; color: var(--red); animation: blink 1s step-end infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* Fade */
+    .fade-in { opacity: 0; transform: translateY(16px); transition: opacity .55s ease, transform .55s ease; }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+    .stagger > * { opacity: 0; transform: translateY(14px); transition: opacity .45s ease, transform .45s ease; }
+    .stagger.visible > *:nth-child(1) { opacity:1; transform:none; transition-delay:.04s; }
+    .stagger.visible > *:nth-child(2) { opacity:1; transform:none; transition-delay:.10s; }
+    .stagger.visible > *:nth-child(3) { opacity:1; transform:none; transition-delay:.16s; }
+    .stagger.visible > *:nth-child(4) { opacity:1; transform:none; transition-delay:.22s; }
+    .stagger.visible > *:nth-child(5) { opacity:1; transform:none; transition-delay:.28s; }
+    .stagger.visible > *:nth-child(6) { opacity:1; transform:none; transition-delay:.34s; }
+    .stagger.visible > *:nth-child(7) { opacity:1; transform:none; transition-delay:.40s; }
+    .stagger.visible > *:nth-child(8) { opacity:1; transform:none; transition-delay:.46s; }
+
+    @media(max-width:768px) {
+      .topbar { padding: 0 20px; }
+      .topbar-nav { display: none; }
+      footer { padding: 22px 20px; }
+    }
+  </style>
 </head>
 <body>
-    
+
+<canvas id="bg-canvas"></canvas>
+
+<!-- TAPE HEADER -->
+<div class="tape-header">
+  <div class="tape-text">OFFENSIVE CORE — CAREERS</div>
+</div>
+
+<!-- TOPBAR -->
+<nav class="topbar">
+  <div class="topbar-logo">OFFENSIVE<span>::</span>CORE</div>
+  <div class="topbar-openings"><div class="open-blink"></div>6 POSICIONES ABIERTAS</div>
+</nav>
+
+<!-- ─── HERO ─── -->
+<section class="hero">
+  <div class="hero-masthead">
+    <span class="masthead-title">Offensive Core · Recruitment Division</span>
+    <span class="masthead-sep">|</span>
+    <span class="masthead-date" id="current-date">2015 · CDMX, México</span>
+    <span class="masthead-edition">EDICIÓN OPERACIONAL Nº 11</span>
+  </div>
+
+  <div class="hero-headline">
+    <div class="headline-kicker">// Reclutamiento · Hackers Éticos de Élite</div>
+    <h1>
+      <span class="red-word">ÚNETE</span>
+      <span class="white-word">AL MEJOR</span>
+      <span class="ghost-word">EQUIPO.</span>
+    </h1>
+  </div>
+
+  <div class="hero-columns">
+    <div class="hero-col">
+      <div class="col-label">// La posición</div>
+      <p class="hero-lede">Buscamos los mejores operadores ofensivos de habla hispana. Sin concesiones.</p>
+      <p class="hero-body-text">
+        No buscamos perfiles de LinkedIn pulidos. Buscamos gente que haya <strong>roto cosas de verdad</strong>, que documente lo que aprende y que entienda que la ética es el único límite.
+      </p>
+      <div class="pull-quote">
+        <p class="pq-text">"Si puedes leer un stack trace a las 3 de la mañana y sonreír, probablemente encajes aquí."</p>
+        <p class="pq-attr">— Alejandro Torres, CEO</p>
+      </div>
+    </div>
+
+    <div class="hero-col">
+      <div class="col-label">// Por qué Offensive Core</div>
+      <p class="hero-body-text" style="margin-bottom:14px;">
+        Somos una empresa pequeña por elección, no por circunstancia. <strong>Preferimos hacer pocas cosas extraordinariamente bien</strong> a escalar sin control degradando la calidad.
+      </p>
+      <p class="hero-body-text" style="margin-bottom:14px;">
+        Trabajarás en los engagements más técnicamente exigentes del mercado hispano. Sin proyectos de checkbox. Sin informes que nadie lee.
+      </p>
+      <p class="hero-body-text">
+        El 20% de tu tiempo es tuyo: investigación, herramientas, CVEs, conferencias. <strong>Crecer es parte del trabajo</strong>, no algo que haces en tu tiempo libre.
+      </p>
+    </div>
+
+    <div class="hero-col" style="border-right:none;">
+      <div class="col-label">// Números</div>
+      <div class="stat-block">
+        <div class="sb-num" data-target="6">0</div>
+        <div class="sb-label">Posiciones abiertas</div>
+      </div>
+      <div class="stat-block">
+        <div class="sb-num" data-target="18">0</div>
+        <div class="sb-label">Operadores en plantilla</div>
+      </div>
+      <div class="stat-block">
+        <div class="sb-num">100%</div>
+        <div class="sb-label">Remoto/híbrido disponible</div>
+      </div>
+      <div class="stat-block">
+        <div class="sb-num">20%</div>
+        <div class="sb-label">Tiempo para investigación</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── JOB OPENINGS ─── -->
+<div class="openings-wrap">
+  <div class="openings-header">
+    <div>
+      <div class="oh-eyebrow">// Misiones disponibles</div>
+      <h2 class="oh-title">POSICIONES<br>ABIERTAS</h2>
+    </div>
+    <div class="oh-count">06</div>
+  </div>
+
+  <div class="filter-row fade-in">
+    <span class="f-label">Filtrar:</span>
+    <button class="f-btn active" onclick="filterJobs(this,'all')">Todas</button>
+    <button class="f-btn" onclick="filterJobs(this,'redteam')">Red Team</button>
+    <button class="f-btn" onclick="filterJobs(this,'research')">Research</button>
+    <button class="f-btn" onclick="filterJobs(this,'cloud')">Cloud</button>
+    <button class="f-btn" onclick="filterJobs(this,'lead')">Liderazgo</button>
+  </div>
+
+  <div class="jobs-grid stagger" id="jobs-grid">
+
+    <!-- Job 1 -->
+    <div class="job-card" data-cat="redteam">
+      <div class="job-inner">
+        <div class="job-num-panel">
+          <div class="jn-mission">MISIÓN</div>
+          <div class="jn-num">001</div>
+          <div class="jn-status"></div>
+        </div>
+        <div class="job-main">
+          <div class="job-header">
+            <div>
+              <div class="job-title">Senior Red Team Operator</div>
+              <div class="job-tags">
+                <span class="jtag jt-hot">URGENTE</span>
+                <span class="jtag jt-red">Red Team</span>
+                <span class="jtag jt-paper">Senior</span>
+                <span class="jtag jt-paper">Madrid / Remoto</span>
+              </div>
+            </div>
+          </div>
+          <p class="job-desc">Buscamos un operador con experiencia demostrable en engagements de Red Team complejos. Serás responsable de planificar y ejecutar operaciones APT completas, desarrollar TTPs personalizadas y mentorizar a operadores junior. Capacidad de operar de forma autónoma en entornos hardened.</p>
+          <div class="job-req-row">
+            <div class="req-item"><span class="req-icon">◆</span> OSCP / CRTO mínimo</div>
+            <div class="req-item"><span class="req-icon">◆</span> 4+ años Red Team</div>
+            <div class="req-item"><span class="req-icon">◆</span> C2 framework exp.</div>
+            <div class="req-item"><span class="req-icon">◆</span> AD attack chains</div>
+          </div>
+        </div>
+        <div class="job-cta-panel">
+          <div class="job-deadline">CIERRE: 28 FEB 2025</div>
+          <a href="https://emilino0109no.github.io/Careers/" class="btn-apply">Aplicar</a>
+          <div class="job-deadline">Ref: OC-RT-001</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Job 2 -->
+    <div class="job-card" data-cat="research">
+      <div class="job-inner">
+        <div class="job-num-panel">
+          <div class="jn-mission">MISIÓN</div>
+          <div class="jn-num">002</div>
+          <div class="jn-status"></div>
+        </div>
+        <div class="job-main">
+          <div class="job-header">
+            <div>
+              <div class="job-title">Exploit Developer / Vuln Researcher</div>
+              <div class="job-tags">
+                <span class="jtag jt-red">Research</span>
+                <span class="jtag jt-red">Exploit Dev</span>
+                <span class="jtag jt-paper">Senior</span>
+                <span class="jtag jt-paper">Remoto</span>
+              </div>
+            </div>
+          </div>
+          <p class="job-desc">Investigación original de vulnerabilidades en productos enterprise. Desarrollo de exploits funcionales para uso interno en operaciones de Red Team y contribución al arsenal ofensivo del equipo. Se valora experiencia en análisis de malware y reversing avanzado.</p>
+          <div class="job-req-row">
+            <div class="req-item"><span class="req-icon">◆</span> OSED / equiv.</div>
+            <div class="req-item"><span class="req-icon">◆</span> CVEs publicados</div>
+            <div class="req-item"><span class="req-icon">◆</span> IDA Pro / Ghidra</div>
+            <div class="req-item"><span class="req-icon">◆</span> C / C++ / ASM</div>
+          </div>
+        </div>
+        <div class="job-cta-panel">
+          <div class="job-deadline">CIERRE: ABIERTO</div>
+          <a href="https://emilino0109no.github.io/Careers/" class="btn-apply">Aplicar</a>
+          <div class="job-deadline">Ref: OC-RES-002</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Job 3 -->
+    <div class="job-card" data-cat="cloud">
+      <div class="job-inner">
+        <div class="job-num-panel">
+          <div class="jn-mission">MISIÓN</div>
+          <div class="jn-num">003</div>
+          <div class="jn-status"></div>
+        </div>
+        <div class="job-main">
+          <div class="job-header">
+            <div>
+              <div class="job-title">Cloud Offensive Security Engineer</div>
+              <div class="job-tags">
+                <span class="jtag jt-red">Cloud</span>
+                <span class="jtag jt-paper">Mid-Senior</span>
+                <span class="jtag jt-paper">Remoto</span>
+              </div>
+            </div>
+          </div>
+          <p class="job-desc">Especialista en ataques a infraestructuras cloud (AWS, Azure, GCP). Capacidad para identificar y explotar misconfiguraciones de IAM, privilege escalation en entornos serverless y ataques a pipelines de CI/CD. Conocimiento de terraform abuse y container escapes.</p>
+          <div class="job-req-row">
+            <div class="req-item"><span class="req-icon">◆</span> OSCP + AWS/Azure cert</div>
+            <div class="req-item"><span class="req-icon">◆</span> IAM escalation</div>
+            <div class="req-item"><span class="req-icon">◆</span> Kubernetes attacks</div>
+          </div>
+        </div>
+        <div class="job-cta-panel">
+          <div class="job-deadline">CIERRE: 15 MAR 2025</div>
+          <a href="https://emilino0109no.github.io/Careers/" class="btn-apply">Aplicar</a>
+          <div class="job-deadline">Ref: OC-CLD-003</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Job 4 -->
+    <div class="job-card" data-cat="redteam">
+      <div class="job-inner">
+        <div class="job-num-panel">
+          <div class="jn-mission">MISIÓN</div>
+          <div class="jn-num">004</div>
+          <div class="jn-status"></div>
+        </div>
+        <div class="job-main">
+          <div class="job-header">
+            <div>
+              <div class="job-title">Web Application Penetration Tester</div>
+              <div class="job-tags">
+                <span class="jtag jt-red">Red Team</span>
+                <span class="jtag jt-red">Web AppSec</span>
+                <span class="jtag jt-paper">Mid</span>
+                <span class="jtag jt-paper">Híbrido</span>
+              </div>
+            </div>
+          </div>
+          <p class="job-desc">Evaluación de seguridad en aplicaciones web y APIs complejas. Experiencia en white-box y black-box testing, encadenamiento de vulnerabilidades y bypass de WAF. Capacidad de realizar análisis de código fuente e identificar vulnerabilidades lógicas de negocio.</p>
+          <div class="job-req-row">
+            <div class="req-item"><span class="req-icon">◆</span> OSCP / OSWE / BSCP</div>
+            <div class="req-item"><span class="req-icon">◆</span> Burp Suite Pro</div>
+            <div class="req-item"><span class="req-icon">◆</span> Code review</div>
+          </div>
+        </div>
+        <div class="job-cta-panel">
+          <div class="job-deadline">CIERRE: ABIERTO</div>
+                <a href="https://emilino0109no.github.io/Careers/" class="btn-apply">Aplicar</a>
+          <div class="job-deadline">Ref: OC-WEB-004</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Job 5 -->
+    <div class="job-card" data-cat="lead">
+      <div class="job-inner">
+        <div class="job-num-panel">
+          <div class="jn-mission">MISIÓN</div>
+          <div class="jn-num">005</div>
+          <div class="jn-status"></div>
+        </div>
+        <div class="job-main">
+          <div class="job-header">
+            <div>
+              <div class="job-title">Red Team Lead — Latam</div>
+              <div class="job-tags">
+                <span class="jtag jt-hot">NUEVO</span>
+                <span class="jtag jt-red">Liderazgo</span>
+                <span class="jtag jt-paper">Lead</span>
+                <span class="jtag jt-paper">CDMX / Bogotá / Remoto</span>
+              </div>
+            </div>
+          </div>
+          <p class="job-desc">Liderazgo técnico y operativo de los engagements en Latinoamérica. Gestión de clientes, definición de alcance, supervisión técnica del equipo local y reportería ejecutiva. Experiencia previa en consultoría de seguridad con clientes enterprise en el mercado latam.</p>
+          <div class="job-req-row">
+            <div class="req-item"><span class="req-icon">◆</span> 6+ años seguridad ofensiva</div>
+            <div class="req-item"><span class="req-icon">◆</span> Gestión de equipos</div>
+            <div class="req-item"><span class="req-icon">◆</span> OSCP + CRTO mínimo</div>
+          </div>
+        </div>
+        <div class="job-cta-panel">
+          <div class="job-deadline">CIERRE: 31 MAR 2025</div>
+          <a href="https://emilino0109no.github.io/Careers/" class="btn-apply">Aplicar</a>
+          <div class="job-deadline">Ref: OC-LEAD-005</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Job 6 -->
+    <div class="job-card" data-cat="research">
+      <div class="job-inner">
+        <div class="job-num-panel">
+          <div class="jn-mission">MISIÓN</div>
+          <div class="jn-num">006</div>
+          <div class="jn-status"></div>
+        </div>
+        <div class="job-main">
+          <div class="job-header">
+            <div>
+              <div class="job-title">Threat Intelligence Analyst</div>
+              <div class="job-tags">
+                <span class="jtag jt-red">Research</span>
+                <span class="jtag jt-red">Intel</span>
+                <span class="jtag jt-paper">Mid</span>
+                <span class="jtag jt-paper">Madrid / Remoto</span>
+              </div>
+            </div>
+          </div>
+          <p class="job-desc">Análisis y producción de inteligencia sobre actores de amenazas. Apoyo a operaciones de Red Team con perfiles adversarios detallados, análisis de TTPs y construcción de escenarios de emulación basados en amenazas reales para sectores específicos.</p>
+          <div class="job-req-row">
+            <div class="req-item"><span class="req-icon">◆</span> GCTI / FOR578</div>
+            <div class="req-item"><span class="req-icon">◆</span> MITRE ATT&CK</div>
+            <div class="req-item"><span class="req-icon">◆</span> OSINT avanzado</div>
+          </div>
+        </div>
+        <div class="job-cta-panel">
+          <div class="job-deadline">CIERRE: ABIERTO</div>
+          <a href="https://emilino0109no.github.io/Careers/" class="btn-apply">Aplicar</a>
+          <div class="job-deadline">Ref: OC-INT-006</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ─── BENEFITS ─── -->
+<div class="benefits-section">
+  <div class="ben-header">
+    <div class="ben-eyebrow">lo que ofrecemos</div>
+    <h2 class="ben-title">POR QUÉ<br><span>MERECE</span><br>LA PENA</h2>
+  </div>
+
+  <div class="ben-grid stagger">
+
+    <div class="ben-card">
+      <div class="ben-num">01</div>
+      <svg class="ben-icon" width="36" height="36" viewBox="0 0 36 36" fill="none">
+        <rect x="4" y="4" width="28" height="28" rx="2" stroke="#c0392b" stroke-width="1.2" opacity=".5"/>
+        <path d="M11 18l4 4 10-8" stroke="#c0392b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div class="ben-name">Trabajo Real</div>
+      <p class="ben-desc">Engagements técnicamente exigentes en organizaciones reales. Sin proyectos de checkbox, sin informes automatizados, sin concesiones de calidad.</p>
+    </div>
+
+    <div class="ben-card">
+      <div class="ben-num">02</div>
+      <svg class="ben-icon" width="36" height="36" viewBox="0 0 36 36" fill="none">
+        <circle cx="18" cy="18" r="13" stroke="#c0392b" stroke-width="1.2" opacity=".5"/>
+        <path d="M18 10v8l5 3" stroke="#c0392b" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <div class="ben-name">20% para ti</div>
+      <p class="ben-desc">Un día a la semana es tuyo: investigación, CVEs, herramientas open source, writeups, preparación de conferencias. Crecer es parte del contrato.</p>
+    </div>
+
+    <div class="ben-card">
+      <div class="ben-num">03</div>
+      <svg class="ben-icon" width="36" height="36" viewBox="0 0 36 36" fill="none">
+        <path d="M18 4l4 8 9 1.3-6.5 6.3 1.5 8.9L18 24l-8 4.5 1.5-8.9L5 13.3 14 12z" stroke="#c0392b" stroke-width="1.2" stroke-linejoin="round" fill="none" opacity=".5"/>
+      </svg>
+      <div class="ben-name">Budget de Formación</div>
+      <p class="ben-desc">Presupuesto anual para certificaciones, cursos y conferencias. OSEP, OSED, BlackHat training — si te hace mejor operador, lo cubrimos.</p>
+    </div>
+
+    <div class="ben-card">
+      <div class="ben-num">04</div>
+      <svg class="ben-icon" width="36" height="36" viewBox="0 0 36 36" fill="none">
+        <rect x="8" y="12" width="20" height="16" rx="1.5" stroke="#c0392b" stroke-width="1.2" opacity=".5"/>
+        <path d="M13 12V10a5 5 0 0110 0v2" stroke="#c0392b" stroke-width="1.2"/>
+        <circle cx="18" cy="20" r="2.5" stroke="#c0392b" stroke-width="1.2"/>
+      </svg>
+      <div class="ben-name">Remoto Real</div>
+      <p class="ben-desc">No remote-friendly, sino remote-first. Trabaja desde donde quieras. Reuniones mínimas y asíncronas. Equipamiento de trabajo incluido.</p>
+    </div>
+
+    <div class="ben-card">
+      <div class="ben-num">05</div>
+      <svg class="ben-icon" width="36" height="36" viewBox="0 0 36 36" fill="none">
+        <circle cx="12" cy="14" r="5" stroke="#c0392b" stroke-width="1.2" opacity=".5"/>
+        <circle cx="24" cy="14" r="5" stroke="#c0392b" stroke-width="1.2" opacity=".3"/>
+        <path d="M3 30c0-5 4-9 9-9s9 4 9 9" stroke="#c0392b" stroke-width="1.2" stroke-linecap="round" opacity=".5"/>
+        <path d="M21 22c1.4-.6 2.9-1 4-1 5 0 9 4 9 9" stroke="#c0392b" stroke-width="1.1" stroke-linecap="round" opacity=".3"/>
+      </svg>
+      <div class="ben-name">Equipo de Élite</div>
+      <p class="ben-desc">Aprenderás de los mejores. Acceso al conocimiento colectivo de 18 especialistas con backgrounds en defensa, inteligencia y research de vulnerabilidades.</p>
+    </div>
+
+    <div class="ben-card">
+      <div class="ben-num">06</div>
+      <svg class="ben-icon" width="36" height="36" viewBox="0 0 36 36" fill="none">
+        <path d="M18 4L32 12v12L18 32 4 24V12L18 4z" stroke="#c0392b" stroke-width="1.2" stroke-linejoin="round" fill="none" opacity=".5"/>
+        <circle cx="18" cy="18" r="5" stroke="#c0392b" stroke-width="1.2"/>
+        <circle cx="18" cy="18" r="1.5" fill="#c0392b"/>
+      </svg>
+      <div class="ben-name">Salario Competitivo</div>
+      <p class="ben-desc">Bandas salariales por encima del mercado, variables por performance y participación en los resultados del equipo. Sin letra pequeña.</p>
+    </div>
+
+    <div class="ben-card">
+      <div class="ben-num">07</div>
+      <svg class="ben-icon" width="36" height="36" viewBox="0 0 36 36" fill="none">
+        <path d="M6 28l6-12 6 8 4-6 8 10" stroke="#c0392b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="28" cy="10" r="4" stroke="#c0392b" stroke-width="1.2" opacity=".5"/>
+      </svg>
+      <div class="ben-name">Visibilidad</div>
+      <p class="ben-desc">Ponemos tu nombre en conferencias, papers y CVEs. Si quieres ser reconocido en la comunidad, aquí tienes el trampolín y el apoyo para lograrlo.</p>
+    </div>
+
+    <div class="ben-card">
+      <div class="ben-num">08</div>
+      <svg class="ben-icon" width="36" height="36" viewBox="0 0 36 36" fill="none">
+        <rect x="4" y="10" width="28" height="18" rx="2" stroke="#c0392b" stroke-width="1.2" opacity=".5"/>
+        <path d="M12 10V8a6 6 0 0112 0v2" stroke="#c0392b" stroke-width="1.2"/>
+        <line x1="14" y1="19" x2="22" y2="19" stroke="#c0392b" stroke-width="1.3" stroke-linecap="round"/>
+        <line x1="14" y1="23" x2="18" y2="23" stroke="#c0392b" stroke-width="1.3" stroke-linecap="round" opacity=".5"/>
+      </svg>
+      <div class="ben-name">Arsenal Completo</div>
+      <p class="ben-desc">Acceso a todas las licencias que necesitas: Cobalt Strike, Burp Suite Pro, Nessus, herramientas internas y laboratorios de práctica 24/7.</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ─── CULTURE ─── -->
+<div class="culture-section fade-in">
+  <div style="max-width:1280px; margin:0 auto; padding:0 0;">
+    <div class="ben-eyebrow">nuestra cultura</div>
+    <h2 class="ben-title">CÓMO<br><span>TRABAJAMOS</span></h2>
+
+    <div class="culture-grid">
+      <div class="culture-manifesto">
+        <p>Somos una empresa fundada por hackers, para hackers. No venimos del mundo de la consultoría corporativa y no queremos convertirnos en ella.</p>
+        <p>Aquí el cargo importa menos que el conocimiento. Un analista que descubre un CVE crítico tiene <strong>más peso en la sala</strong> que un manager con 10 años de experiencia gestionando proyectos de cumplimiento.</p>
+        <p>Creemos en la <strong>documentación radical</strong>. Todo lo que aprendemos se documenta, se comparte internamente y cuando tiene sentido, se publica. El conocimiento acumulado es la mayor ventaja competitiva que tenemos.</p>
+        <p><em>No tenemos política de puertas abiertas porque no hay puertas.</em> Todos tienen acceso directo a todos. Los problemas se dicen en alto y se resuelven rápido.</p>
+        <p>El único comportamiento que no toleramos es la <strong>falta de honestidad técnica</strong>. Si no sabes algo, dilo. Si cometes un error, dilo. Aquí se aprende de los errores, no se esconden.</p>
+      </div>
+
+      <ul class="culture-nos">
+        <li class="cn-item">
+          <div class="cn-icon">✓</div>
+          <div class="cn-text"><strong>Reuniones con propósito</strong> — ninguna reunión que pueda ser un email. Respetamos el tiempo de los operadores en focus mode.</div>
+        </li>
+        <li class="cn-item">
+          <div class="cn-icon">✓</div>
+          <div class="cn-text"><strong>Sin micromanagement</strong> — defines cómo logras los objetivos. Solo reportas los resultados. Confiamos en que sabes trabajar.</div>
+        </li>
+        <li class="cn-item">
+          <div class="cn-icon">✓</div>
+          <div class="cn-text"><strong>Feedback directo</strong> — la crítica constructiva es bienvenida en todos los niveles. No suavizamos la verdad para proteger egos.</div>
+        </li>
+        <li class="cn-item">
+          <div class="cn-icon">✓</div>
+          <div class="cn-text"><strong>Diversidad técnica</strong> — valoramos backgrounds diferentes: militares, académicos, bug bounty hunters, autodidactas. El origen no importa, el resultado sí.</div>
+        </li>
+        <li class="cn-item">
+          <div class="cn-icon">✗</div>
+          <div class="cn-text"><strong>Cero política de oficina</strong> — si pasas más tiempo en reuniones de gestión que hackeando, algo ha salido mal. Lo corregimos activamente.</div>
+        </li>
+        <li class="cn-item">
+          <div class="cn-icon">✗</div>
+          <div class="cn-text"><strong>Sin proyectos de relleno</strong> — rechazamos activamente contratos que no nos dejan trabajar bien. Preferimos menos clientes que compromisos mediocres.</div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ─── PROCESO ─── -->
+<div class="process-section fade-in">
+  <div class="ben-eyebrow">proceso de selección</div>
+  <h2 class="ben-title">CÓMO<br><span>APLICAR</span></h2>
+
+  <div class="process-steps stagger">
+    <div class="ps-step">
+      <div class="ps-num">01</div>
+      <div class="ps-name">Candidatura</div>
+      <p class="ps-desc">Envía un email con tu CV, portfolio técnico (writeups, herramientas, CVEs) y una breve presentación de por qué encajas en Offensive Core.</p>
+      <div class="ps-time">// ~1 día de tu parte</div>
+    </div>
+    <div class="ps-step">
+      <div class="ps-num">02</div>
+      <div class="ps-name">Revisión Técnica</div>
+      <p class="ps-desc">Revisamos tu portfolio y certificaciones. Si encaja con la posición, respondemos en máximo 5 días hábiles con feedback honesto.</p>
+      <div class="ps-time">// 3–5 días hábiles</div>
+    </div>
+    <div class="ps-step">
+      <div class="ps-num">03</div>
+      <div class="ps-name">Challenge Técnico</div>
+      <p class="ps-desc">Una prueba práctica relevante para la posición. No es un CTF trivial — es un ejercicio que simula trabajo real. Sin límite de tiempo, con acceso a recursos.</p>
+      <div class="ps-time">// 48–72h a tu ritmo</div>
+    </div>
+    <div class="ps-step">
+      <div class="ps-num">04</div>
+      <div class="ps-name">Entrevista Técnica</div>
+      <p class="ps-desc">Conversación técnica profunda sobre la solución del challenge y tu experiencia. Sin preguntas de trivia, sin whiteboard coding — solo conversación real.</p>
+      <div class="ps-time">// 60–90 min por videollamada</div>
+    </div>
+    <div class="ps-step">
+      <div class="ps-num">05</div>
+      <div class="ps-name">Decisión & Oferta</div>
+      <p class="ps-desc">Feedback detallado independientemente de la decisión. Si hay fit, oferta en 48h. Negociamos con transparencia total sobre bandas salariales y condiciones.</p>
+      <div class="ps-time">// 2–3 días tras entrevista</div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── CTA ─── -->
+<div class="cta-section fade-in">
+  <div class="cta-inner">
+    <div>
+      <h2 class="cta-title">¿LISTO PARA<br><span>LA MISIÓN</span>?</h2>
+      <p class="cta-body">Si has llegado hasta aquí leyendo, probablemente ya sabes si encajas. No esperes a tener la certificación perfecta ni el portfolio más completo. Si tienes pasión técnica y ética irrenunciable, escríbenos.</p>
+      <div class="cta-actions">
+        <a href="https://emilino0109no.github.io/Careers/" class="btn-apply" style="font-family:var(--display);font-size:.9rem;letter-spacing:.16em;">Enviar Candidatura</a>
+        <a href="https://emilino0109no.github.io/Website-documentation/Servicios/paginas/equipo.html" class="btn-apply-ghost" style="font-family:var(--display);font-size:.9rem;letter-spacing:.16em;">Ver el Equipo</a>
+      </div>
+    </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">OFFENSIVE :: CORE — Recruitment <span class="cursor-blink"></span></div>
+
+  <div class="footer-copy">© 2015 Offensive Core S.L. · Igualdad de oportunidades · Todas las posiciones bajo NDA</div>
+</footer>
+
+<script>
+// ─── DATE ───
+const d = new Date();
+document.getElementById('current-date').textContent =
+  '2015 · CDMX, México';
+
+// ─── CANVAS ───
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+resize();
+window.addEventListener('resize', resize);
+
+// Falling paper fragments / redacted lines
+const lines = Array.from({length: 35}, () => ({
+  x: Math.random() * innerWidth,
+  y: Math.random() * innerHeight,
+  w: Math.random() * 80 + 20,
+  h: Math.random() * 3 + 1,
+  vy: Math.random() * .35 + .1,
+  vx: (Math.random() - .5) * .2,
+  a: Math.random() * 0.06 + 0.01,
+  rot: (Math.random() - .5) * .4,
+  angle: (Math.random() - .5) * 0.3,
+}));
+
+// Red glitch bursts
+const bursts = [];
+let burstTimer = 0;
+
+function spawnBurst() {
+  bursts.push({
+    x: Math.random() * innerWidth,
+    y: Math.random() * innerHeight,
+    r: 0, maxR: Math.random() * 80 + 30,
+    a: 0.15, decay: 0.012
+  });
+}
+
+function drawBg() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  burstTimer++;
+  if (burstTimer % 120 === 0) spawnBurst();
+
+  // Bursts
+  for (let i = bursts.length - 1; i >= 0; i--) {
+    const b = bursts[i];
+    b.r += 2; b.a -= b.decay;
+    if (b.a <= 0) { bursts.splice(i, 1); continue; }
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(192,57,43,${b.a * 0.3})`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  // Redacted lines
+  lines.forEach(l => {
+    l.y += l.vy; l.x += l.vx;
+    if (l.y > canvas.height + 10) { l.y = -10; l.x = Math.random() * canvas.width; }
+    ctx.save();
+    ctx.translate(l.x, l.y);
+    ctx.rotate(l.angle);
+    ctx.fillStyle = `rgba(240,236,228,${l.a})`;
+    ctx.fillRect(-l.w / 2, -l.h / 2, l.w, l.h);
+    ctx.restore();
+  });
+
+  // Subtle vignette
+  const vig = ctx.createRadialGradient(
+    canvas.width/2, canvas.height/2, canvas.width*.25,
+    canvas.width/2, canvas.height/2, canvas.width*.8
+  );
+  vig.addColorStop(0, 'rgba(0,0,0,0)');
+  vig.addColorStop(1, 'rgba(0,0,0,0.55)');
+  ctx.fillStyle = vig;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+setInterval(drawBg, 45);
+
+// ─── JOB FILTER ───
+function filterJobs(btn, cat) {
+  document.querySelectorAll('.f-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const cards = document.querySelectorAll('#jobs-grid .job-card');
+  cards.forEach(c => {
+    const cc = c.dataset.cat;
+    if (cat === 'all' || cc === cat) {
+      c.style.display = '';
+      setTimeout(() => { c.style.opacity = '1'; c.style.transform = ''; }, 10);
+    } else {
+      c.style.opacity = '0';
+      setTimeout(() => { c.style.display = 'none'; }, 260);
+    }
+  });
+}
+
+// ─── COUNTERS ───
+function countUp(el) {
+  const t = parseInt(el.dataset.target);
+  let c = 0; const s = Math.max(t / 50, 1);
+  const timer = setInterval(() => {
+    c = Math.min(c + s, t);
+    el.textContent = Math.round(c);
+    if (c >= t) clearInterval(timer);
+  }, 24);
+}
+
+// ─── OBSERVER ───
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      e.target.querySelectorAll('[data-target]').forEach(countUp);
+      obs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.07 });
+
+document.querySelectorAll('.fade-in, .stagger').forEach(el => obs.observe(el));
+</script>
 </body>
 </html>
