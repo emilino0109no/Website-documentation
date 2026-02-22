@@ -1,11 +1,1510 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Certificaciones — Offensive Core</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Exo+2:ital,wght@0,300;0,400;0,700;0,900;1,900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="icon" href="../../imagenes/Offensive_Core.png" type="image/png">
+  <style>
+    :root {
+      --gold:        #f5c842;
+      --gold-dim:    #c49a1a;
+      --gold-dark:   #6b5000;
+      --gold-xs:     #1e1500;
+      --platinum:    #e8eef5;
+      --platinum-dim:#8899aa;
+      --red-cert:    #ff4757;
+      --blue-cert:   #1e90ff;
+      --green-cert:  #2ed573;
+      --purple-cert: #9b59b6;
+      --orange-cert: #ff6b35;
+      --bg:          #060608;
+      --bg2:         #0c0c10;
+      --bg3:         #121218;
+      --bg4:         #1a1a24;
+      --mono:        'DM Mono', monospace;
+      --display:     'Exo 2', sans-serif;
+      --body:        'Inter', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--platinum-dim);
+      font-family: var(--body);
+      font-size: 15px;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* Subtle noise */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0; opacity: .5;
+    }
+
+    #bg-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+
+    /* ─── TOPBAR ─── */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      height: 54px;
+      background: rgba(6,6,8,0.97);
+      border-bottom: 1px solid rgba(245,200,66,0.08);
+      display: flex; align-items: center; padding: 0 52px;
+      backdrop-filter: blur(10px);
+    }
+
+    .topbar-logo {
+      font-family: var(--display); font-weight: 900;
+      font-size: 0.88rem; letter-spacing: 0.12em;
+      color: var(--gold); text-shadow: 0 0 16px rgba(245,200,66,.4);
+      text-transform: uppercase; flex: 1;
+    }
+
+    .topbar-logo span { color: rgba(255,255,255,.2); font-weight: 300; }
+
+    .topbar-nav {
+      display: flex; gap: 36px; list-style: none;
+      font-family: var(--mono); font-size: 0.6rem;
+      letter-spacing: 0.14em; text-transform: uppercase;
+    }
+
+    .topbar-nav a { color: var(--platinum-dim); opacity: .5; text-decoration: none; transition: all .2s; }
+    .topbar-nav a:hover, .topbar-nav a.active { color: var(--gold); opacity: 1; text-shadow: 0 0 8px var(--gold-dim); }
+
+    .topbar-badge {
+      margin-left: 40px; font-family: var(--mono); font-size: 0.58rem;
+      color: var(--gold-dark); letter-spacing: 0.12em;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .gold-dot {
+      width: 6px; height: 6px; background: var(--gold);
+      border-radius: 50%; box-shadow: 0 0 8px var(--gold-dim);
+      animation: goldPulse 2.5s ease-in-out infinite;
+    }
+
+    @keyframes goldPulse { 0%,100%{opacity:1; box-shadow:0 0 8px var(--gold-dim)} 50%{opacity:.3; box-shadow:none} }
+
+    /* ─── HERO ─── */
+    .hero {
+      position: relative; z-index: 2;
+      min-height: 80vh;
+      display: flex; flex-direction: column; justify-content: flex-end;
+      padding: 0 60px 72px;
+      overflow: hidden;
+    }
+
+    /* Giant background text */
+    .hero-bg-text {
+      position: absolute;
+      font-family: var(--display); font-style: italic; font-weight: 900;
+      font-size: clamp(10rem, 22vw, 20rem);
+      color: rgba(245,200,66,0.028);
+      bottom: -20px; right: -2%;
+      line-height: 1; letter-spacing: -0.03em;
+      pointer-events: none; user-select: none;
+      white-space: nowrap;
+    }
+
+    .hero-pretitle {
+      font-family: var(--mono); font-size: 0.62rem;
+      color: var(--gold-dark); letter-spacing: 0.32em;
+      text-transform: uppercase; margin-bottom: 18px;
+      display: flex; align-items: center; gap: 14px;
+    }
+
+    .hero-pretitle::before {
+      content: '';
+      width: 40px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-dark));
+    }
+
+    h1 {
+      font-family: var(--display); font-weight: 900;
+      font-size: clamp(3.2rem, 8vw, 7.5rem);
+      line-height: 0.88; letter-spacing: -0.02em;
+      color: var(--platinum);
+    }
+
+    h1 .gold { color: var(--gold); text-shadow: 0 0 40px rgba(245,200,66,.35), 0 0 80px rgba(245,200,66,.1); }
+    h1 .dim  { opacity: .35; }
+
+    .hero-sub {
+      margin-top: 24px; max-width: 540px;
+      font-size: 0.9rem; font-weight: 300; color: var(--platinum-dim);
+      line-height: 1.7;
+    }
+
+    .hero-sub strong { color: var(--platinum); font-weight: 500; }
+
+    /* ─── MASTER STATS ─── */
+    .master-stats {
+      position: relative; z-index: 2;
+      display: grid; grid-template-columns: repeat(5,1fr);
+      gap: 1px; background: rgba(245,200,66,0.06);
+    }
+
+    @media(max-width:900px) { .master-stats { grid-template-columns: repeat(3,1fr); } }
+    @media(max-width:500px) { .master-stats { grid-template-columns: 1fr 1fr; } }
+
+    .ms-cell {
+      background: var(--bg2); padding: 34px 22px; text-align: center;
+    }
+
+    .ms-num {
+      font-family: var(--display); font-weight: 900; font-style: italic;
+      font-size: 2.8rem; line-height: 1; margin-bottom: 6px;
+    }
+
+    .mn-gold    { color: var(--gold); text-shadow: 0 0 20px rgba(245,200,66,.4); }
+    .mn-plat    { color: var(--platinum); }
+    .mn-red     { color: var(--red-cert); text-shadow: 0 0 12px rgba(255,71,87,.3); }
+    .mn-green   { color: var(--green-cert); text-shadow: 0 0 12px rgba(46,213,115,.3); }
+    .mn-blue    { color: var(--blue-cert); text-shadow: 0 0 12px rgba(30,144,255,.3); }
+
+    .ms-lbl {
+      font-family: var(--mono); font-size: 0.52rem;
+      color: rgba(136,153,170,.6); letter-spacing: 0.18em; text-transform: uppercase;
+    }
+
+    /* ─── CONTENT ─── */
+    .content {
+      position: relative; z-index: 2;
+      max-width: 1280px; margin: 0 auto;
+      padding: 0 52px 120px;
+    }
+
+    @media(max-width:700px) { .content { padding: 0 20px 80px; } }
+
+    .section-header {
+      padding: 80px 0 40px;
+      display: flex; align-items: flex-end; gap: 20px;
+      border-bottom: 1px solid rgba(245,200,66,0.06);
+      margin-bottom: 40px;
+    }
+
+    .s-eyebrow {
+      font-family: var(--mono); font-size: 0.58rem;
+      color: var(--gold-dark); letter-spacing: 0.28em;
+      text-transform: uppercase; margin-bottom: 10px;
+    }
+
+    .s-eyebrow::before { content: '// '; opacity: .6; }
+
+    .s-title {
+      font-family: var(--display); font-weight: 900;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      line-height: 0.96; color: var(--platinum);
+      letter-spacing: -0.01em;
+    }
+
+    .s-title em { font-style: italic; color: var(--gold); }
+
+    .s-count {
+      margin-left: auto;
+      font-family: var(--display); font-weight: 900; font-style: italic;
+      font-size: 4rem; color: rgba(245,200,66,0.12);
+      line-height: 1; flex-shrink: 0;
+    }
+
+    /* ─── CERT CARD ─── */
+    .cert-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+    }
+
+    @media(max-width:1100px) { .cert-grid { grid-template-columns: repeat(2,1fr); } }
+    @media(max-width:650px)  { .cert-grid { grid-template-columns: 1fr; } }
+
+    .cert-card {
+      background: var(--bg2);
+      padding: 32px 28px 28px;
+      position: relative; overflow: hidden;
+      transition: background .3s;
+    }
+
+    .cert-card:hover { background: var(--bg3); }
+
+    /* Glow border top on hover */
+    .cert-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      opacity: 0; transition: opacity .3s;
+    }
+
+    .cert-card:hover::before { opacity: 1; }
+
+    /* Category color line at left */
+    .cert-card::after {
+      content: '';
+      position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+    }
+
+    /* Category colors */
+    .cat-offensive::after  { background: var(--red-cert); }
+    .cat-offensive::before { background: linear-gradient(90deg, var(--red-cert), transparent); }
+
+    .cat-cloud::after      { background: var(--blue-cert); }
+    .cat-cloud::before     { background: linear-gradient(90deg, var(--blue-cert), transparent); }
+
+    .cat-dfir::after       { background: var(--green-cert); }
+    .cat-dfir::before      { background: linear-gradient(90deg, var(--green-cert), transparent); }
+
+    .cat-governance::after  { background: var(--purple-cert); }
+    .cat-governance::before { background: linear-gradient(90deg, var(--purple-cert), transparent); }
+
+    .cat-network::after    { background: var(--orange-cert); }
+    .cat-network::before   { background: linear-gradient(90deg, var(--orange-cert), transparent); }
+
+    .cat-general::after    { background: var(--gold); }
+    .cat-general::before   { background: linear-gradient(90deg, var(--gold), transparent); }
+
+    /* Card header */
+    .cc-header {
+      display: flex; align-items: flex-start;
+      justify-content: space-between; gap: 12px; margin-bottom: 18px;
+    }
+
+    .cc-logo {
+      width: 52px; height: 52px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--bg3);
+      border: 1px solid rgba(255,255,255,0.06);
+      font-family: var(--display); font-weight: 900;
+      font-size: 0.7rem; letter-spacing: 0.05em;
+      transition: border-color .3s;
+    }
+
+    .cert-card:hover .cc-logo { border-color: rgba(245,200,66,0.2); }
+
+    .cc-logo-text { text-align: center; line-height: 1.2; }
+
+    .cc-meta { flex: 1; }
+
+    .cc-issuer {
+      font-family: var(--mono); font-size: 0.54rem;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+
+    .cc-name {
+      font-family: var(--display); font-weight: 700;
+      font-size: 1.05rem; color: var(--platinum);
+      line-height: 1.15; letter-spacing: 0.01em;
+    }
+
+    /* Difficulty rings */
+    .cc-diff {
+      position: relative; width: 42px; height: 42px; flex-shrink: 0;
+    }
+
+    .diff-canvas { width: 42px; height: 42px; }
+
+    .diff-label {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--display); font-weight: 900;
+      font-size: 0.65rem;
+    }
+
+    /* Card body */
+    .cc-divider {
+      height: 1px; margin: 0 0 16px;
+      background: rgba(255,255,255,0.04);
+    }
+
+    .cc-desc {
+      font-size: 0.8rem; font-weight: 300; color: var(--platinum-dim);
+      line-height: 1.6; margin-bottom: 16px;
+    }
+
+    /* Tags */
+    .cc-tags {
+      display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 18px;
+    }
+
+    .cc-tag {
+      font-family: var(--mono); font-size: 0.5rem;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 3px 8px; border: 1px solid rgba(255,255,255,.06);
+      color: rgba(136,153,170,.7);
+    }
+
+    /* Footer row */
+    .cc-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .cc-holders {
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .holders-label {
+      font-family: var(--mono); font-size: 0.5rem;
+      color: var(--platinum-dim); opacity: .6; letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .holders-num {
+      font-family: var(--display); font-weight: 700; font-style: italic;
+      font-size: 1.2rem; color: var(--gold);
+    }
+
+    .holders-dots {
+      display: flex; gap: 3px;
+    }
+
+    .h-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      border: 1px solid rgba(255,255,255,.12);
+    }
+
+    .h-dot.filled { background: var(--gold); border-color: var(--gold); box-shadow: 0 0 4px var(--gold-dim); }
+
+    .cc-exp {
+      font-family: var(--mono); font-size: 0.5rem;
+      color: var(--platinum-dim); opacity: .5; letter-spacing: 0.08em;
+    }
+
+    .cc-exp .valid { color: var(--green-cert); opacity: 1; }
+    .cc-exp .lifetime { color: var(--gold); opacity: .8; }
+
+    /* ─── CATEGORY TABS ─── */
+    .cat-tabs {
+      position: sticky; top: 54px; z-index: 100;
+      background: rgba(6,6,8,0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(245,200,66,0.06);
+      display: flex; gap: 0; overflow-x: auto;
+      scrollbar-width: none; padding: 0 52px;
+    }
+
+    .cat-tabs::-webkit-scrollbar { display: none; }
+
+    .cat-tab {
+      font-family: var(--mono); font-size: 0.6rem;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      padding: 16px 22px;
+      background: transparent; border: none; cursor: pointer;
+      color: rgba(136,153,170,.5);
+      border-bottom: 2px solid transparent;
+      white-space: nowrap; transition: all .2s;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .cat-tab:hover { color: var(--platinum-dim); }
+
+    .cat-tab.active {
+      color: var(--gold);
+      border-bottom-color: var(--gold);
+    }
+
+    .cat-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+    }
+
+    .tab-count {
+      font-size: 0.48rem; background: rgba(245,200,66,0.12);
+      color: var(--gold-dark); padding: 1px 5px;
+      border-radius: 2px;
+    }
+
+    .cat-tab.active .tab-count { background: rgba(245,200,66,0.2); color: var(--gold); }
+
+    /* ─── JOURNEY MAP ─── */
+    .journey-section { padding: 80px 0; }
+
+    .journey-title {
+      font-family: var(--mono); font-size: 0.6rem;
+      color: var(--gold-dark); letter-spacing: 0.28em;
+      text-transform: uppercase; margin-bottom: 10px;
+    }
+
+    .journey-title::before { content: '// '; opacity: .6; }
+
+    .j-heading {
+      font-family: var(--display); font-weight: 900;
+      font-size: clamp(1.6rem, 3.5vw, 2.6rem);
+      color: var(--platinum); letter-spacing: -0.01em;
+      margin-bottom: 40px; line-height: 1;
+    }
+
+    .j-heading em { font-style: italic; color: var(--gold); }
+
+    .journey-tracks {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    @media(max-width:800px) { .journey-tracks { grid-template-columns: 1fr; } }
+
+    .track {
+      background: var(--bg2);
+      border: 1px solid rgba(245,200,66,0.06);
+      padding: 28px 30px;
+    }
+
+    .track-name {
+      font-family: var(--display); font-weight: 700;
+      font-size: 1rem; text-transform: uppercase;
+      letter-spacing: 0.08em; margin-bottom: 6px;
+    }
+
+    .track-sub {
+      font-family: var(--mono); font-size: 0.55rem;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      opacity: .6; margin-bottom: 20px;
+    }
+
+    .track-path {
+      display: flex; align-items: center;
+      gap: 0; flex-wrap: nowrap; overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .track-path::-webkit-scrollbar { display: none; }
+
+    .tp-node {
+      display: flex; flex-direction: column; align-items: center;
+      flex-shrink: 0;
+    }
+
+    .tp-cert {
+      background: var(--bg3); border: 1px solid rgba(255,255,255,.08);
+      padding: 10px 14px; text-align: center;
+      transition: all .2s; cursor: default;
+      min-width: 80px;
+    }
+
+    .tp-cert:hover {
+      border-color: rgba(245,200,66,.3);
+      background: var(--bg4);
+    }
+
+    .tp-cert-name {
+      font-family: var(--mono); font-size: 0.62rem;
+      color: var(--platinum); letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+
+    .tp-cert-level {
+      font-size: 0.48rem; margin-top: 3px; letter-spacing: 0.1em;
+      text-transform: uppercase; opacity: .6;
+    }
+
+    .tp-arrow {
+      font-family: var(--mono); font-size: 0.7rem;
+      color: rgba(245,200,66,.2); padding: 0 6px; flex-shrink: 0;
+    }
+
+    .tp-cert.featured {
+      border-color: rgba(245,200,66,.25);
+      background: rgba(245,200,66,.03);
+    }
+
+    .tp-cert.featured .tp-cert-name { color: var(--gold); }
+
+    /* ─── COMPARISON TABLE ─── */
+    .compare-section { padding: 40px 0 80px; }
+
+    .compare-table {
+      width: 100%; border-collapse: collapse;
+      margin-top: 36px; font-size: 0.82rem;
+    }
+
+    .compare-table thead tr {
+      background: rgba(245,200,66,0.04);
+      border-bottom: 1px solid rgba(245,200,66,0.12);
+    }
+
+    .compare-table thead th {
+      font-family: var(--mono); font-size: 0.55rem;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      padding: 14px 20px; text-align: left;
+      color: var(--platinum-dim);
+    }
+
+    .compare-table thead th:first-child { color: rgba(136,153,170,.4); }
+
+    .compare-table tbody tr {
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      transition: background .2s;
+    }
+
+    .compare-table tbody tr:hover { background: rgba(245,200,66,0.02); }
+
+    .compare-table tbody td {
+      padding: 13px 20px; color: var(--platinum-dim);
+      vertical-align: middle;
+    }
+
+    .compare-table tbody td:first-child {
+      font-family: var(--mono); font-size: 0.75rem;
+      color: var(--platinum); letter-spacing: 0.04em;
+    }
+
+    .diff-pill {
+      display: inline-block;
+      font-family: var(--mono); font-size: 0.52rem;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 3px 10px; border: 1px solid;
+    }
+
+    .dp-legendary { color: #ff4757; border-color: rgba(255,71,87,.3); background: rgba(255,71,87,.05); }
+    .dp-expert    { color: var(--gold); border-color: rgba(245,200,66,.3); background: rgba(245,200,66,.05); }
+    .dp-advanced  { color: #1e90ff; border-color: rgba(30,144,255,.3); background: rgba(30,144,255,.05); }
+    .dp-mid       { color: #2ed573; border-color: rgba(46,213,115,.3); background: rgba(46,213,115,.05); }
+    .dp-entry     { color: var(--platinum-dim); border-color: rgba(136,153,170,.2); background: transparent; }
+
+    .team-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-family: var(--mono); font-size: 0.55rem;
+      color: var(--gold); letter-spacing: 0.08em;
+      background: rgba(245,200,66,.06);
+      border: 1px solid rgba(245,200,66,.15);
+      padding: 3px 9px;
+    }
+
+    .team-badge::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--gold); box-shadow: 0 0 4px var(--gold-dim);
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      position: relative; z-index: 2;
+      border-top: 1px solid rgba(245,200,66,0.06);
+      padding: 30px 52px;
+      display: flex; align-items: center;
+      justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    }
+
+    .footer-logo {
+      font-family: var(--display); font-weight: 900;
+      font-size: 0.72rem; color: var(--gold-dark);
+      letter-spacing: 0.12em; text-transform: uppercase;
+    }
+
+    .footer-links {
+      display: flex; gap: 24px; font-family: var(--mono);
+      font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase;
+    }
+
+    .footer-links a { color: var(--platinum-dim); opacity: .4; text-decoration: none; transition: all .2s; }
+    .footer-links a:hover { opacity: 1; color: var(--gold); }
+
+    .footer-copy { font-family: var(--mono); font-size: 0.54rem; color: #1a1a12; letter-spacing: .06em; }
+
+    .cursor-blink::after { content: '█'; color: var(--gold); animation: blink 1s step-end infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* Fade in */
+    .fade-in { opacity: 0; transform: translateY(16px); transition: opacity .55s ease, transform .55s ease; }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+    .stagger > * { opacity: 0; transform: translateY(14px); transition: opacity .45s ease, transform .45s ease; }
+    .stagger.visible > *:nth-child(1)  { opacity:1; transform:none; transition-delay:.04s; }
+    .stagger.visible > *:nth-child(2)  { opacity:1; transform:none; transition-delay:.10s; }
+    .stagger.visible > *:nth-child(3)  { opacity:1; transform:none; transition-delay:.16s; }
+    .stagger.visible > *:nth-child(4)  { opacity:1; transform:none; transition-delay:.22s; }
+    .stagger.visible > *:nth-child(5)  { opacity:1; transform:none; transition-delay:.28s; }
+    .stagger.visible > *:nth-child(6)  { opacity:1; transform:none; transition-delay:.34s; }
+    .stagger.visible > *:nth-child(7)  { opacity:1; transform:none; transition-delay:.40s; }
+    .stagger.visible > *:nth-child(8)  { opacity:1; transform:none; transition-delay:.46s; }
+    .stagger.visible > *:nth-child(9)  { opacity:1; transform:none; transition-delay:.52s; }
+    .stagger.visible > *:nth-child(10) { opacity:1; transform:none; transition-delay:.58s; }
+    .stagger.visible > *:nth-child(11) { opacity:1; transform:none; transition-delay:.64s; }
+    .stagger.visible > *:nth-child(12) { opacity:1; transform:none; transition-delay:.70s; }
+
+    @media(max-width:768px) {
+      .topbar { padding: 0 20px; }
+      .topbar-nav { display: none; }
+      .hero { padding: 0 24px 60px; }
+      .cat-tabs { padding: 0 20px; }
+      footer { padding: 24px 20px; }
+    }
+  </style>
 </head>
 <body>
-    
+
+<canvas id="bg-canvas"></canvas>
+
+<!-- TOPBAR -->
+<nav class="topbar">
+  <div class="topbar-logo">OFFENSIVE<span> :: </span>CORE</div>
+
+  <div class="topbar-badge"><div class="gold-dot"></div>47 ACTIVAS</div>
+</nav>
+
+<!-- ─── HERO ─── -->
+<section class="hero" style="padding-top:54px;">
+  <div class="hero-bg-text">CERTIFIED</div>
+  <div class="hero-pretitle">Credenciales · Offensive Core · Validated</div>
+  <h1>
+    <span class="dim">NUESTRAS</span><br>
+    <span class="gold">CERTIFI</span>CACIONES
+  </h1>
+  <p class="hero-sub">
+    <strong>47 certificaciones activas</strong> en manos de 18 especialistas. Desde OSCP hasta OSED, CRTO hasta GCTI — cada credencial representa cientos de horas de formación práctica y conocimiento ofensivo demostrado.
+  </p>
+</section>
+
+<!-- MASTER STATS -->
+<div class="master-stats fade-in">
+  <div class="ms-cell">
+    <div class="ms-num mn-gold" data-target="47">0</div>
+    <div class="ms-lbl">Certs activas</div>
+  </div>
+  <div class="ms-cell">
+    <div class="ms-num mn-red" data-target="18">0</div>
+    <div class="ms-lbl">Especialistas certificados</div>
+  </div>
+  <div class="ms-cell">
+    <div class="ms-num mn-plat" data-target="12">0</div>
+    <div class="ms-lbl">Organismos emisores</div>
+  </div>
+  <div class="ms-cell">
+    <div class="ms-num mn-green" data-target="9">0</div>
+    <div class="ms-lbl">CVEs publicados</div>
+  </div>
+  <div class="ms-cell">
+    <div class="ms-num mn-blue" data-target="6">0</div>
+    <div class="ms-lbl">Años manteniendo creds</div>
+  </div>
+</div>
+
+<!-- CATEGORY TABS -->
+<div class="cat-tabs" id="cat-tabs">
+  <button class="cat-tab active" onclick="switchCat(this,'all')">
+    <span class="cat-dot" style="background:#f5c842"></span> Todas <span class="tab-count">47</span>
+  </button>
+  <button class="cat-tab" onclick="switchCat(this,'offensive')">
+    <span class="cat-dot" style="background:#ff4757"></span> Ofensiva <span class="tab-count">18</span>
+  </button>
+  <button class="cat-tab" onclick="switchCat(this,'cloud')">
+    <span class="cat-dot" style="background:#1e90ff"></span> Cloud <span class="tab-count">8</span>
+  </button>
+  <button class="cat-tab" onclick="switchCat(this,'dfir')">
+    <span class="cat-dot" style="background:#2ed573"></span> DFIR / Intel <span class="tab-count">7</span>
+  </button>
+  <button class="cat-tab" onclick="switchCat(this,'governance')">
+    <span class="cat-dot" style="background:#9b59b6"></span> Governance <span class="tab-count">8</span>
+  </button>
+  <button class="cat-tab" onclick="switchCat(this,'network')">
+    <span class="cat-dot" style="background:#ff6b35"></span> Network / Infra <span class="tab-count">6</span>
+  </button>
+</div>
+
+<!-- ─── CONTENT ─── -->
+<div class="content">
+
+  <!-- CERT GRID -->
+  <div id="cert-grid-wrap" style="padding-top:48px;">
+    <div class="cert-grid stagger" id="cert-grid">
+
+      <!-- OSCP -->
+      <div class="cert-card cat-offensive" data-cat="offensive">
+        <div class="cc-header">
+          <div class="cc-logo"><div class="cc-logo-text" style="color:#ff4757">OffSec</div></div>
+          <div class="cc-meta">
+            <div class="cc-issuer" style="color:#ff4757">Offensive Security</div>
+            <div class="cc-name">Offensive Security Certified Professional</div>
+          </div>
+          <div class="cc-diff">
+            <canvas class="diff-canvas" id="dc-oscp" width="42" height="42"></canvas>
+            <div class="diff-label" style="color:#ff4757">5</div>
+          </div>
+        </div>
+        <div class="cc-divider"></div>
+        <p class="cc-desc">El estándar de facto del pentesting. 24h de examen práctico con comprometer al menos 4 de 5 máquinas en un entorno de red real. Sin preguntas teóricas, solo explotación.</p>
+        <div class="cc-tags">
+          <span class="cc-tag">Pentest</span>
+          <span class="cc-tag">Buffer Overflow</span>
+          <span class="cc-tag">Privilege Escalation</span>
+          <span class="cc-tag">Pivoting</span>
+        </div>
+        <div class="cc-footer">
+          <div class="cc-holders">
+            <div class="holders-label">En equipo</div>
+            <div class="holders-num">×8</div>
+            <div class="holders-dots">
+              <div class="h-dot filled"></div><div class="h-dot filled"></div><div class="h-dot filled"></div><div class="h-dot filled"></div><div class="h-dot filled"></div><div class="h-dot filled"></div><div class="h-dot filled"></div><div class="h-dot filled"></div>
+            </div>
+          </div>
+          <div class="cc-exp"><span class="lifetime">Sin expiración</span></div>
+        </div>
+      </div>
+
+      <!-- OSED -->
+      <div class="cert-card cat-offensive" data-cat="offensive">
+        <div class="cc-header">
+          <div class="cc-logo"><div class="cc-logo-text" style="color:#ff4757">OffSec</div></div>
+          <div class="cc-meta">
+            <div class="cc-issuer" style="color:#ff4757">Offensive Security</div>
+            <div class="cc-name">OS Exploit Developer — Windows User Mode</div>
+          </div>
+          <div class="cc-diff">
+            <canvas class="diff-canvas" id="dc-osed" width="42" height="42"></canvas>
+            <div class="diff-label" style="color:#ff4757">9</div>
+          </div>
+        </div>
+        <div class="cc-divider"></div>
+        <p class="cc-desc">Desarrollo avanzado de exploits en Windows: DEP/ASLR bypass, ROP chains, shellcode crafting y análisis de vulnerabilidades de corrupción de memoria. Examen de 72 horas.</p>
+        <div class="cc-tags">
+          <span class="cc-tag">Exploit Dev</span><span class="cc-tag">ROP Chains</span><span class="cc-tag">DEP Bypass</span><span class="cc-tag">WinDbg</span>
+        </div>
+        <div class="cc-footer">
+          <div class="cc-holders">
+            <div class="holders-label">En equipo</div>
+            <div class="holders-num">×2</div>
+            <div class="holders-dots">
+              <div class="h-dot filled"></div><div class="h-dot filled"></div><div class="h-dot"></div>
+            </div>
+          </div>
+          <div class="cc-exp"><span class="lifetime">Sin expiración</span></div>
+        </div>
+      </div>
+
+      <!-- OSEP -->
+      <div class="cert-card cat-offensive" data-cat="offensive">
+        <div class="cc-header">
+          <div class="cc-logo"><div class="cc-logo-text" style="color:#ff4757">OffSec</div></div>
+          <div class="cc-meta">
+            <div class="cc-issuer" style="color:#ff4757">Offensive Security</div>
+            <div class="cc-name">OS Experienced Penetration Tester</div>
+          </div>
+          <div class="cc-diff">
+            <canvas class="diff-canvas" id="dc-osep" width="42" height="42"></canvas>
+            <div class="diff-label" style="color:#ff4757">8</div>
+          </div>
+        </div>
+        <div class="cc-divider"></div>
+        <p class="cc-desc">Evasión avanzada de AV/EDR, C2 personalizado, Active Directory attacks y técnicas de evasión a nivel de proceso. Enfocado en operaciones de Red Team sofisticadas.</p>
+        <div class="cc-tags">
+          <span class="cc-tag">AV Evasion</span><span class="cc-tag">C2 Dev</span><span class="cc-tag">Process Injection</span>
+        </div>
+        <div class="cc-footer">
+          <div class="cc-holders">
+            <div class="holders-label">En equipo</div>
+            <div class="holders-num">×3</div>
+            <div class="holders-dots">
+              <div class="h-dot filled"></div><div class="h-dot filled"></div><div class="h-dot filled"></div>
+            </div>
+          </div>
+          <div class="cc-exp"><span class="lifetime">Sin expiración</span></div>
+        </div>
+      </div>
+
+      <!-- OSWE -->
+      <div class="cert-card cat-offensive" data-cat="offensive">
+        <div class="cc-header">
+          <div class="cc-logo"><div class="cc-logo-text" style="color:#ff4757">OffSec</div></div>
+          <div class="cc-meta">
+            <div class="cc-issuer" style="color:#ff4757">Offensive Security</div>
+            <div class="cc-name">OS Web Expert</div>
+          </div>
+          <div class="cc-diff">
+            <canvas class="diff-canvas" id="dc-oswe" width="42" height="42"></canvas>
+            <div class="diff-label" style="color:#ff4757">8</div>
+          </div>
+        </div>
+        <div class="cc-divider"></div>
+        <p class="cc-desc">Revisión de código fuente y white-box web application testing avanzado. Encadenamiento de vulnerabilidades para RCE completo. Examen de 48 horas con acceso al código.</p>
+        <div class="cc-tags">
+          <span class="cc-tag">White-Box</span><span class="cc-tag">Code Review</span><span class="cc-tag">RCE Chains</span>
+        </div>
+        <div class="cc-footer">
+          <div class="cc-holders">
+            <div class="holders-label">En equipo</div>
+            <div class="holders-num">×2</div>
+            <div class="holders-dots"><div class="h-dot filled"></div><div class="h-dot filled"></div></div>
+          </div>
+          <div class="cc-exp"><span class="lifetime">Sin expiración</span></div>
+        </div>
+      </div>
+
+      <!-- CRTO -->
+      <div class="cert-card cat-offensive" data-cat="offensive">
+        <div class="cc-header">
+          <div class="cc-logo"><div class="cc-logo-text" style="color:#ff6b35">ZeroP</div></div>
+          <div class="cc-meta">
+            <div class="cc-issuer" style="color:#ff6b35">Zero-Point Security</div>
+            <div class="cc-name">Certified Red Team Operator</div>
+          </div>
+          <div class="cc-diff">
+            <canvas class="diff-canvas" id="dc-crto" width="42" height="42"></canvas>
+            <div class="diff-label" style="color:#ff6b35">7</div>
+          </div>
+        </div>
+        <div class="cc-divider"></div>
+        <p class="cc-desc">Operaciones de Red Team con Cobalt Strike: Malleable C2, OPSEC avanzado, bypass de defensas modernas, Active Directory y movimiento lateral en entornos hardened.</p>
+        <div class="cc-tags">
+          <span class="cc-tag">Cobalt Strike</span><span class="cc-tag">Malleable C2</span><span class="cc-tag">OPSEC</span>
+        </div>
+        <div class="cc-footer">
+          <div class="cc-holders">
+            <div class="holders-label">En equipo</div>
+            <div class="holders-num">×4</div>
+            <div class="holders-dots">
+              <div class="h-dot filled"></div><div class="h-dot filled"></div><div class="h-dot filled"></div><div class="h-dot filled"></div>
+            </div>
+          </div>
+          <div class="cc-exp"><span class="valid">Activa · 2026</span></div>
+        </div>
+      </div>
+
+      <!-- eCPTX -->
+      <div class="cert-card cat-offensive" data-cat="offensive">
+        <div class="cc-header">
+          <div class="cc-logo"><div class="cc-logo-text" style="color:#ff4757">eLS</div></div>
+          <div class="cc-meta">
+            <div class="cc-issuer" style="color:#ff4757">eLearnSecurity</div>
+            <div class="cc-name">Certified Professional Penetration Tester X</div>
+          </div>
+          <div class="cc-diff">
+            <canvas class="diff-canvas" id="dc-ecptx" width="42" height="42"></canvas>
+            <div class="diff-label" style="color:#ff4757">8</div>
+          </div>
+        </div>
+        <div class="cc-divider"></div>
+        <p class="cc-desc">Pentesting avanzado en entornos empresariales complejos: AD multi-dominio, trust abuse, custom exploits y operaciones de Red Team completas de inicio a fin.</p>
+        <div class="cc-tags">
+          <span class="cc-tag">Multi-Domain AD</span><span class="cc-tag">Trust Abuse</span><span class="cc-tag">Full Red Team</span>
+        </div>
+        <div class="cc-footer">
+          <div class="cc-holders">
+            <div class="holders-label">En equipo</div>
+            <div class="holders-num">×2</div>
+            <div class="holders-dots"><div class="h-dot filled"></div><div class="h-dot filled"></div></div>
+          </div>
+          <div class="cc-exp"><span class="valid">Activa · 2026</span></div>
+        </div>
+      </div>
+
+      <!-- BSCP -->
+      <div class="cert-card cat-offensive" data-cat="offensive">
+        <div class="cc-header">
+          <div class="cc-logo"><div class="cc-logo-text" style="color:#ff6b35">BPP</div></div>
+          <div class="cc-meta">
+            <div class="cc-issuer" style="color:#ff6b35">PortSwigger</div>
+            <div class="cc-name">Burp Suite Certified Practitioner</div>
+          </div>
+          <div class="cc-diff">
+            <canvas class="diff-canvas" id="dc-bscp" width="42" height="42"></canvas>
+            <div class="diff-label" style="color:#ff6b35">6</div>
+          </div>
+        </div>
+        <div class="cc-divider"></div>
+        <p class="cc-desc">Dominio completo de Burp Suite Professional en un examen cronometrado de 4 horas. Cubre todas las vulnerabilidades web modernas incluyendo SSRF, XXE, OAuth y desync attacks.</p>
+        <div class="cc-tags">
+          <span class="cc-tag">Burp Suite</span><span class="cc-tag">Web Vulns</span><span class="cc-tag">OAuth Attacks</span>
+        </div>
+        <div class="cc-footer">
+          <div class="cc-holders">
+            <div class="holders-label">En equipo</div>
+            <div class="holders-num">×1</div>
+            <div class="holders-dots"><div class="h-dot filled"></div></div>
+          </div>
+          <div class="cc-exp"><span class="valid">Activa · 2026</span></div>
+        </div>
+      </div>
+
+      <!-- eWPTX -->
+      <div class="cert-card cat-offensive" data-cat="offensive">
+        <div class="cc-header">
+          <div class="cc-logo"><div class="cc-logo-text" style="color:#ff4757">eLS</div></div>
+          <div class="cc-meta">
+            <div class="cc-issuer" style="color:#ff4757">eLearnSecurity</div>
+            <div class="cc-name">Web Application Penetration Tester Xtreme</div>
+          </div>
+          <div class="cc-diff">
+            <canvas class="diff-canvas" id="dc-ewptx" width="42" height="42"></canvas>
+            <div class="diff-label" style="color:#ff4757">7</div>
+          </div>
+        </div>
+        <div class="cc-divider"></div>
+        <p class="cc-desc">Explotación avanzada de aplicaciones web con encadenamiento de vulnerabilidades complejas. Incluye ataques a frameworks modernos, lógica de negocio y técnicas de bypass de WAF.</p>
+        <div class="cc-tags">
+          <span class="cc-tag">WAF Bypass</span><span class="cc-tag">Logic Flaws</span><span class="cc-tag">Chaining</span>
+        </div>
+        <div class="cc-footer">
+          <div class="cc-holders">
+            <div class="holders-label">En equipo</div>
+            <div class="holders-num">×2</div>
+            <div class="holders-dots"><div class="h-dot filled"></div><div class="h-dot filled"></div></div>
+          </div>
+          <div class="cc-exp"><span class="valid">Activa · 2026</span></div>
+        </div>
+      </div>
+
+      <!-- eMAPT -->
+      <div class="cert-card cat-offensive" data-cat="offensive">
+        <div class="cc-header">
+          <div class="cc-logo"><div class="cc-logo-text" style="color:#ff4757">eLS</div></div>
+          <div class="cc-meta">
+            <div class="cc-issuer" style="color:#ff4757">eLearnSecurity</div>
+            <div class="cc-name">Mobile Application Penetration Tester</div>
+          </div>
+          <div class="cc-diff">
+            <canvas class="diff-canvas" id="dc-emapt" width="42" height="42"></canvas>
+            <div class="diff-label" style="color:#ff4757">6</div>
+          </div>
+        </div>
+        <div class="cc-divider"></div>
+        <p class="cc-desc">Análisis de seguridad avanzado en aplicaciones iOS y Android: análisis estático/dinámico, bypass de controles de seguridad, intercepción de tráfico y reversing de apps.</p>
+        <div class="cc-tags">
+          <span class="cc-tag">iOS / Android</span><span class="cc-tag">MobSF</span><span class="cc-tag">Frida</span>
+        </div>
+        <div class="cc-footer">
+          <div class="cc-holders">
+            <div class="holders-label">En equipo</div>
+            <div class="holders-num">×2</div>
+            <div class="holders-dots"><div class="h-dot filled"></div><div class="h-dot filled"></div></div>
+          </div>
+          <div class="cc-exp"><span class="valid">Activa · 2025</span></div>
+        </div>
+      </div>
+
+      <!-- AWS SAP -->
+      <div class="cert-card cat-cloud" data-cat="cloud">
+        <div class="cc-header">
+          <div class="cc-logo"><div class="cc-logo-text" style="color:#1e90ff">AWS</div></div>
+          <div class="cc-meta">
+            <div class="cc-issuer" style="color:#1e90ff">Amazon Web Services</div>
+            <div class="cc-name">Solutions Architect — Professional</div>
+          </div>
+          <div class="cc-diff">
+            <canvas class="diff-canvas" id="dc-awssap" width="42" height="42"></canvas>
+            <div class="diff-label" style="color:#1e90ff">7</div>
+          </div>
+        </div>
+        <div class="cc-divider"></div>
+        <p class="cc-desc">El nivel más alto de certificación de arquitectura AWS. Dominio de diseño de soluciones multi-cuenta, seguridad IAM, networking avanzado y estrategias de migración a escala.</p>
+        <div class="cc-tags">
+          <span class="cc-tag">IAM</span><span class="cc-tag">Multi-Account</span><span class="cc-tag">VPC Security</span>
+        </div>
+        <div class="cc-footer">
+          <div class="cc-holders">
+            <div class="holders-label">En equipo</div>
+            <div class="holders-num">×2</div>
+            <div class="holders-dots"><div class="h-dot filled"></div><div class="h-dot filled"></div></div>
+          </div>
+          <div class="cc-exp"><span class="valid">Activa · 2026</span></div>
+        </div>
+      </div>
+
+      <!-- AZ-500 -->
+      <div class="cert-card cat-cloud" data-cat="cloud">
+        <div class="cc-header">
+          <div class="cc-logo"><div class="cc-logo-text" style="color:#1e90ff">Azure</div></div>
+          <div class="cc-meta">
+            <div class="cc-issuer" style="color:#1e90ff">Microsoft</div>
+            <div class="cc-name">Azure Security Engineer Associate</div>
+          </div>
+          <div class="cc-diff">
+            <canvas class="diff-canvas" id="dc-az500" width="42" height="42"></canvas>
+            <div class="diff-label" style="color:#1e90ff">6</div>
+          </div>
+        </div>
+        <div class="cc-divider"></div>
+        <p class="cc-desc">Implementación y gestión de controles de seguridad en Microsoft Azure. Cubre Azure AD, Key Vault, Defender for Cloud, NSGs y políticas de seguridad a nivel empresarial.</p>
+        <div class="cc-tags">
+          <span class="cc-tag">Azure AD</span><span class="cc-tag">Defender</span><span class="cc-tag">Key Vault</span>
+        </div>
+        <div class="cc-footer">
+          <div class="cc-holders">
+            <div class="holders-label">En equipo</div>
+            <div class="holders-num">×3</div>
+            <div class="holders-dots"><div class="h-dot filled"></div><div class="h-dot filled"></div><div class="h-dot filled"></div></div>
+          </div>
+          <div class="cc-exp"><span class="valid">Activa · 2026</span></div>
+        </div>
+      </div>
+
+      <!-- CCSP -->
+      <div class="cert-card cat-cloud" data-cat="cloud">
+        <div class="cc-header">
+          <div class="cc-logo"><div class="cc-logo-text" style="color:#9b59b6">(ISC)²</div></div>
+          <div class="cc-meta">
+            <div class="cc-issuer" style="color:#9b59b6">(ISC)²</div>
+            <div class="cc-name">Certified Cloud Security Professional</div>
+          </div>
+          <div class="cc-diff">
+            <canvas class="diff-canvas" id="dc-ccsp" width="42" height="42"></canvas>
+            <div class="diff-label" style="color:#9b59b6">7</div>
+          </div>
+        </div>
+        <div class="cc-divider"></div>
+        <p class="cc-desc">Certificación de élite en seguridad cloud multi-proveedor. Cubre arquitectura, diseño, operaciones, cumplimiento legal y seguridad de datos en entornos cloud a nivel global.</p>
+        <div class="cc-tags">
+          <span class="cc-tag">Multi-Cloud</span><span class="cc-tag">Compliance</span><span class="cc-tag">Data Security</span>
+        </div>
+        <div class="cc-footer">
+          <div class="cc-holders">
+            <div class="holders-label">En equipo</div>
+            <div class="holders-num">×2</div>
+            <div class="holders-dots"><div class="h-dot filled"></div><div class="h-dot filled"></div></div>
+          </div>
+          <div class="cc-exp"><span class="valid">Activa · 2026</span></div>
+        </div>
+      </div>
+
+      <!-- GCTI -->
+      <div class="cert-card cat-dfir" data-cat="dfir">
+        <div class="cc-header">
+          <div class="cc-logo"><div class="cc-logo-text" style="color:#2ed573">GIAC</div></div>
+          <div class="cc-meta">
+            <div class="cc-issuer" style="color:#2ed573">GIAC / SANS</div>
+            <div class="cc-name">Cyber Threat Intelligence</div>
+          </div>
+          <div class="cc-diff">
+            <canvas class="diff-canvas" id="dc-gcti" width="42" height="42"></canvas>
+            <div class="diff-label" style="color:#2ed573">7</div>
+          </div>
+        </div>
+        <div class="cc-divider"></div>
+        <p class="cc-desc">Análisis y producción de inteligencia sobre ciberamenazas. Modelado de adversarios, atribución de actores APT, análisis de TTPs y creación de productos de inteligencia accionables.</p>
+        <div class="cc-tags">
+          <span class="cc-tag">APT Tracking</span><span class="cc-tag">TTP Analysis</span><span class="cc-tag">Attribution</span>
+        </div>
+        <div class="cc-footer">
+          <div class="cc-holders">
+            <div class="holders-label">En equipo</div>
+            <div class="holders-num">×2</div>
+            <div class="holders-dots"><div class="h-dot filled"></div><div class="h-dot filled"></div></div>
+          </div>
+          <div class="cc-exp"><span class="valid">Activa · 2025</span></div>
+        </div>
+      </div>
+
+      <!-- GREM -->
+      <div class="cert-card cat-dfir" data-cat="dfir">
+        <div class="cc-header">
+          <div class="cc-logo"><div class="cc-logo-text" style="color:#2ed573">GIAC</div></div>
+          <div class="cc-meta">
+            <div class="cc-issuer" style="color:#2ed573">GIAC / SANS</div>
+            <div class="cc-name">Reverse Engineering Malware</div>
+          </div>
+          <div class="cc-diff">
+            <canvas class="diff-canvas" id="dc-grem" width="42" height="42"></canvas>
+            <div class="diff-label" style="color:#2ed573">8</div>
+          </div>
+        </div>
+        <div class="cc-divider"></div>
+        <p class="cc-desc">Análisis avanzado de malware mediante ingeniería inversa: análisis estático y dinámico, desensamblado, debugging y análisis de packers y obfuscators modernos.</p>
+        <div class="cc-tags">
+          <span class="cc-tag">Reversing</span><span class="cc-tag">IDA Pro</span><span class="cc-tag">Ghidra</span>
+        </div>
+        <div class="cc-footer">
+          <div class="cc-holders">
+            <div class="holders-label">En equipo</div>
+            <div class="holders-num">×1</div>
+            <div class="holders-dots"><div class="h-dot filled"></div></div>
+          </div>
+          <div class="cc-exp"><span class="valid">Activa · 2025</span></div>
+        </div>
+      </div>
+
+      <!-- CISSP -->
+      <div class="cert-card cat-governance" data-cat="governance">
+        <div class="cc-header">
+          <div class="cc-logo"><div class="cc-logo-text" style="color:#9b59b6">(ISC)²</div></div>
+          <div class="cc-meta">
+            <div class="cc-issuer" style="color:#9b59b6">(ISC)²</div>
+            <div class="cc-name">Certified Information Systems Security Professional</div>
+          </div>
+          <div class="cc-diff">
+            <canvas class="diff-canvas" id="dc-cissp" width="42" height="42"></canvas>
+            <div class="diff-label" style="color:#9b59b6">7</div>
+          </div>
+        </div>
+        <div class="cc-divider"></div>
+        <p class="cc-desc">La certificación de seguridad más reconocida globalmente. Cubre los 8 dominios del CBK: gestión de riesgos, criptografía, seguridad de redes, SDLC y operaciones de seguridad.</p>
+        <div class="cc-tags">
+          <span class="cc-tag">Risk Management</span><span class="cc-tag">Cryptography</span><span class="cc-tag">8 Domains</span>
+        </div>
+        <div class="cc-footer">
+          <div class="cc-holders">
+            <div class="holders-label">En equipo</div>
+            <div class="holders-num">×3</div>
+            <div class="holders-dots"><div class="h-dot filled"></div><div class="h-dot filled"></div><div class="h-dot filled"></div></div>
+          </div>
+          <div class="cc-exp"><span class="valid">Activa · CPE</span></div>
+        </div>
+      </div>
+
+      <!-- GICSP -->
+      <div class="cert-card cat-network" data-cat="network">
+        <div class="cc-header">
+          <div class="cc-logo"><div class="cc-logo-text" style="color:#ff6b35">GIAC</div></div>
+          <div class="cc-meta">
+            <div class="cc-issuer" style="color:#ff6b35">GIAC / SANS</div>
+            <div class="cc-name">Global Industrial Cyber Security Professional</div>
+          </div>
+          <div class="cc-diff">
+            <canvas class="diff-canvas" id="dc-gicsp" width="42" height="42"></canvas>
+            <div class="diff-label" style="color:#ff6b35">7</div>
+          </div>
+        </div>
+        <div class="cc-divider"></div>
+        <p class="cc-desc">Especialización en seguridad de sistemas de control industrial (ICS/SCADA/OT). Evaluación de riesgos, hardening y respuesta a incidentes en infraestructuras críticas.</p>
+        <div class="cc-tags">
+          <span class="cc-tag">ICS/SCADA</span><span class="cc-tag">OT Security</span><span class="cc-tag">Infra Crítica</span>
+        </div>
+        <div class="cc-footer">
+          <div class="cc-holders">
+            <div class="holders-label">En equipo</div>
+            <div class="holders-num">×1</div>
+            <div class="holders-dots"><div class="h-dot filled"></div></div>
+          </div>
+          <div class="cc-exp"><span class="valid">Activa · 2026</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- JOURNEY SECTION -->
+  <div class="journey-section fade-in">
+    <div class="journey-title">Rutas de certificación recomendadas</div>
+    <h2 class="j-heading">Roadmap de <em>Formación</em></h2>
+
+    <div class="journey-tracks">
+
+      <div class="track">
+        <div class="track-name" style="color:#ff4757">Red Team Operator</div>
+        <div class="track-sub">// Ruta ofensiva completa</div>
+        <div class="track-path">
+          <div class="tp-node">
+            <div class="tp-cert"><div class="tp-cert-name">eJPT</div><div class="tp-cert-level">Entry</div></div>
+          </div>
+          <div class="tp-arrow">→</div>
+          <div class="tp-node">
+            <div class="tp-cert featured"><div class="tp-cert-name">OSCP</div><div class="tp-cert-level">Mid</div></div>
+          </div>
+          <div class="tp-arrow">→</div>
+          <div class="tp-node">
+            <div class="tp-cert featured"><div class="tp-cert-name">CRTO</div><div class="tp-cert-level">Advanced</div></div>
+          </div>
+          <div class="tp-arrow">→</div>
+          <div class="tp-node">
+            <div class="tp-cert featured"><div class="tp-cert-name">OSEP</div><div class="tp-cert-level">Expert</div></div>
+          </div>
+          <div class="tp-arrow">→</div>
+          <div class="tp-node">
+            <div class="tp-cert"><div class="tp-cert-name">eCPTX</div><div class="tp-cert-level">Elite</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="track">
+        <div class="track-name" style="color:#ff4757">Exploit Developer</div>
+        <div class="track-sub">// Investigación de vulnerabilidades</div>
+        <div class="track-path">
+          <div class="tp-node">
+            <div class="tp-cert"><div class="tp-cert-name">OSCP</div><div class="tp-cert-level">Base</div></div>
+          </div>
+          <div class="tp-arrow">→</div>
+          <div class="tp-node">
+            <div class="tp-cert featured"><div class="tp-cert-name">OSED</div><div class="tp-cert-level">Advanced</div></div>
+          </div>
+          <div class="tp-arrow">→</div>
+          <div class="tp-node">
+            <div class="tp-cert"><div class="tp-cert-name">OSEE</div><div class="tp-cert-level">Legend</div></div>
+          </div>
+          <div class="tp-arrow">→</div>
+          <div class="tp-node">
+            <div class="tp-cert"><div class="tp-cert-name">CVEs</div><div class="tp-cert-level">Research</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="track">
+        <div class="track-name" style="color:#1e90ff">Cloud Security</div>
+        <div class="track-sub">// Ofensiva en entornos cloud</div>
+        <div class="track-path">
+          <div class="tp-node">
+            <div class="tp-cert"><div class="tp-cert-name">AWS SAA</div><div class="tp-cert-level">Base</div></div>
+          </div>
+          <div class="tp-arrow">→</div>
+          <div class="tp-node">
+            <div class="tp-cert featured"><div class="tp-cert-name">AWS SAP</div><div class="tp-cert-level">Pro</div></div>
+          </div>
+          <div class="tp-arrow">→</div>
+          <div class="tp-node">
+            <div class="tp-cert featured"><div class="tp-cert-name">CCSP</div><div class="tp-cert-level">Expert</div></div>
+          </div>
+          <div class="tp-arrow">→</div>
+          <div class="tp-node">
+            <div class="tp-cert"><div class="tp-cert-name">OSCP+</div><div class="tp-cert-level">Ofensiva</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="track">
+        <div class="track-name" style="color:#2ed573">Threat Intelligence</div>
+        <div class="track-sub">// Análisis e inteligencia</div>
+        <div class="track-path">
+          <div class="tp-node">
+            <div class="tp-cert"><div class="tp-cert-name">CEH</div><div class="tp-cert-level">Base</div></div>
+          </div>
+          <div class="tp-arrow">→</div>
+          <div class="tp-node">
+            <div class="tp-cert featured"><div class="tp-cert-name">GCFE</div><div class="tp-cert-level">Mid</div></div>
+          </div>
+          <div class="tp-arrow">→</div>
+          <div class="tp-node">
+            <div class="tp-cert featured"><div class="tp-cert-name">GCTI</div><div class="tp-cert-level">Advanced</div></div>
+          </div>
+          <div class="tp-arrow">→</div>
+          <div class="tp-node">
+            <div class="tp-cert"><div class="tp-cert-name">GREM</div><div class="tp-cert-level">Expert</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- COMPARE TABLE -->
+  <div class="compare-section fade-in">
+    <div class="s-eyebrow">comparativa rápida</div>
+    <h2 class="s-title">Certs por <em>Dificultad</em></h2>
+
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Certificación</th>
+          <th>Emisor</th>
+          <th>Dificultad</th>
+          <th>Formato examen</th>
+          <th>Duración examen</th>
+          <th>Estado en equipo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>OSED</td>
+          <td style="opacity:.6">Offensive Security</td>
+          <td><span class="diff-pill dp-legendary">Legendaria</span></td>
+          <td style="opacity:.6">Práctico</td>
+          <td style="opacity:.6">72 horas</td>
+          <td><span class="team-badge">×2 holders</span></td>
+        </tr>
+        <tr>
+          <td>OSEP / eCPTX</td>
+          <td style="opacity:.6">OffSec / eLS</td>
+          <td><span class="diff-pill dp-expert">Experto</span></td>
+          <td style="opacity:.6">Práctico</td>
+          <td style="opacity:.6">48 horas</td>
+          <td><span class="team-badge">×5 holders</span></td>
+        </tr>
+        <tr>
+          <td>OSCP / CRTO</td>
+          <td style="opacity:.6">OffSec / Zero-Point</td>
+          <td><span class="diff-pill dp-expert">Experto</span></td>
+          <td style="opacity:.6">Práctico</td>
+          <td style="opacity:.6">24–48 horas</td>
+          <td><span class="team-badge">×12 holders</span></td>
+        </tr>
+        <tr>
+          <td>GCTI / GREM</td>
+          <td style="opacity:.6">GIAC / SANS</td>
+          <td><span class="diff-pill dp-advanced">Avanzado</span></td>
+          <td style="opacity:.6">Test + práctico</td>
+          <td style="opacity:.6">3 horas</td>
+          <td><span class="team-badge">×3 holders</span></td>
+        </tr>
+        <tr>
+          <td>AWS SAP / CCSP</td>
+          <td style="opacity:.6">AWS / (ISC)²</td>
+          <td><span class="diff-pill dp-advanced">Avanzado</span></td>
+          <td style="opacity:.6">Test multi-opción</td>
+          <td style="opacity:.6">3 horas</td>
+          <td><span class="team-badge">×4 holders</span></td>
+        </tr>
+        <tr>
+          <td>CISSP / CISM</td>
+          <td style="opacity:.6">(ISC)² / ISACA</td>
+          <td><span class="diff-pill dp-advanced">Avanzado</span></td>
+          <td style="opacity:.6">CAT / Test</td>
+          <td style="opacity:.6">4–6 horas</td>
+          <td><span class="team-badge">×5 holders</span></td>
+        </tr>
+        <tr>
+          <td>AZ-500 / GCP</td>
+          <td style="opacity:.6">Microsoft / Google</td>
+          <td><span class="diff-pill dp-mid">Intermedio</span></td>
+          <td style="opacity:.6">Test + lab</td>
+          <td style="opacity:.6">2–3 horas</td>
+          <td><span class="team-badge">×5 holders</span></td>
+        </tr>
+        <tr>
+          <td>eJPT / CEH</td>
+          <td style="opacity:.6">eLS / EC-Council</td>
+          <td><span class="diff-pill dp-entry">Entrada</span></td>
+          <td style="opacity:.6">Test / Práctico</td>
+          <td style="opacity:.6">2 horas</td>
+          <td style="opacity:.4; font-size:.75rem; font-family:var(--mono)">Base recomendada</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">OFFENSIVE :: CORE — Certifications Registry <span class="cursor-blink"></span></div>
+  <div class="footer-copy">© 2015 Offensive Core S.L. · Todas las certificaciones verificadas</div>
+</footer>
+
+<script>
+// ─── CANVAS BACKGROUND ───
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+resize();
+window.addEventListener('resize', resize);
+
+// Gold particles drifting up
+const particles = Array.from({length:60}, () => ({
+  x: Math.random() * innerWidth,
+  y: Math.random() * innerHeight,
+  vy: -(Math.random() * .4 + .1),
+  vx: (Math.random() - .5) * .15,
+  r: Math.random() * 1.2 + .3,
+  a: Math.random() * .12 + .02,
+  twinkle: Math.random() * Math.PI * 2
+}));
+
+// Faint grid
+function drawBg() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Deep radial glow at center-bottom
+  const g = ctx.createRadialGradient(canvas.width/2, canvas.height, 0, canvas.width/2, canvas.height, canvas.width*.7);
+  g.addColorStop(0, 'rgba(245,200,66,0.04)');
+  g.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // Faint grid
+  ctx.strokeStyle = 'rgba(245,200,66,0.02)';
+  ctx.lineWidth = .5;
+  for (let x = 0; x < canvas.width; x += 80) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); ctx.stroke(); }
+  for (let y = 0; y < canvas.height; y += 80) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke(); }
+
+  // Particles
+  particles.forEach(p => {
+    p.twinkle += 0.04;
+    p.y += p.vy; p.x += p.vx;
+    if (p.y < -10) { p.y = canvas.height + 10; p.x = Math.random() * canvas.width; }
+    if (p.x < 0) p.x = canvas.width;
+    if (p.x > canvas.width) p.x = 0;
+    const alpha = p.a * (0.5 + 0.5 * Math.sin(p.twinkle));
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(245,200,66,${alpha})`;
+    ctx.fill();
+  });
+}
+
+setInterval(drawBg, 45);
+
+// ─── DIFF RING CANVASES ───
+const diffMap = {
+  'dc-oscp':  { val: 5, max: 10, color: '#ff4757' },
+  'dc-osed':  { val: 9, max: 10, color: '#ff4757' },
+  'dc-osep':  { val: 8, max: 10, color: '#ff4757' },
+  'dc-oswe':  { val: 8, max: 10, color: '#ff4757' },
+  'dc-crto':  { val: 7, max: 10, color: '#ff6b35' },
+  'dc-ecptx': { val: 8, max: 10, color: '#ff4757' },
+  'dc-bscp':  { val: 6, max: 10, color: '#ff6b35' },
+  'dc-ewptx': { val: 7, max: 10, color: '#ff4757' },
+  'dc-emapt': { val: 6, max: 10, color: '#ff4757' },
+  'dc-awssap':{ val: 7, max: 10, color: '#1e90ff' },
+  'dc-az500': { val: 6, max: 10, color: '#1e90ff' },
+  'dc-ccsp':  { val: 7, max: 10, color: '#9b59b6' },
+  'dc-gcti':  { val: 7, max: 10, color: '#2ed573' },
+  'dc-grem':  { val: 8, max: 10, color: '#2ed573' },
+  'dc-cissp': { val: 7, max: 10, color: '#9b59b6' },
+  'dc-gicsp': { val: 7, max: 10, color: '#ff6b35' },
+};
+
+function drawDiffRing(id, data) {
+  const c = document.getElementById(id);
+  if (!c) return;
+  const cx2 = c.getContext('2d');
+  const r = 17, cx = 21, cy = 21;
+  cx2.clearRect(0,0,42,42);
+  // Track
+  cx2.beginPath();
+  cx2.arc(cx, cy, r, 0, Math.PI*2);
+  cx2.strokeStyle = 'rgba(255,255,255,0.06)';
+  cx2.lineWidth = 3; cx2.stroke();
+  // Fill
+  const pct = data.val / data.max;
+  cx2.beginPath();
+  cx2.arc(cx, cy, r, -Math.PI/2, -Math.PI/2 + Math.PI*2*pct);
+  cx2.strokeStyle = data.color;
+  cx2.lineWidth = 3;
+  cx2.shadowColor = data.color;
+  cx2.shadowBlur = 6;
+  cx2.stroke();
+  cx2.shadowBlur = 0;
+}
+
+Object.entries(diffMap).forEach(([id, d]) => drawDiffRing(id, d));
+
+// ─── CATEGORY FILTER ───
+function switchCat(btn, cat) {
+  document.querySelectorAll('.cat-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const cards = document.querySelectorAll('#cert-grid .cert-card');
+  cards.forEach(c => {
+    const cardCat = c.dataset.cat;
+    if (cat === 'all' || cardCat === cat) {
+      c.style.display = '';
+      setTimeout(() => { c.style.opacity = '1'; c.style.transform = 'translateY(0)'; }, 10);
+    } else {
+      c.style.opacity = '0'; c.style.transform = 'translateY(10px)';
+      setTimeout(() => { c.style.display = 'none'; }, 280);
+    }
+  });
+}
+
+// ─── COUNTERS ───
+function countUp(el) {
+  const t = parseInt(el.dataset.target);
+  let c = 0; const s = Math.max(t/50,1);
+  const timer = setInterval(() => {
+    c = Math.min(c+s,t); el.textContent = Math.round(c);
+    if(c>=t) clearInterval(timer);
+  }, 22);
+}
+
+// ─── OBSERVER ───
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting) {
+      e.target.classList.add('visible');
+      e.target.querySelectorAll('[data-target]').forEach(countUp);
+      obs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.08 });
+
+document.querySelectorAll('.fade-in, .stagger').forEach(el => obs.observe(el));
+</script>
 </body>
 </html>
