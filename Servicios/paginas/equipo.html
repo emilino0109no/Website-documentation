@@ -1,11 +1,1405 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nuestro Equipo — Offensive Core</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+  <link rel="icon" href="../../imagenes/Offensive_Core.png" type="image/png">
+  <style>
+    :root {
+      --cyan:       #00e5ff;
+      --cyan-dim:   #00b8cc;
+      --cyan-dark:  #004d5c;
+      --cyan-xs:    #001a20;
+      --green:      #39ff8e;
+      --green-dim:  #22cc6a;
+      --red:        #ff3855;
+      --amber:      #ffaa00;
+      --bg:         #02080a;
+      --bg2:        #060f12;
+      --bg3:        #0a1820;
+      --bg4:        #0e2030;
+      --text:       #8ab8c8;
+      --text-dim:   #3d6575;
+      --text-bright:#cce8f0;
+      --mono:       'IBM Plex Mono', monospace;
+      --mono2:      'Share Tech Mono', monospace;
+      --display:    'Syne', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 15px;
+      line-height: 1.7;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* Custom cursor */
+    #cursor {
+      position: fixed; z-index: 9999;
+      width: 20px; height: 20px;
+      pointer-events: none;
+      transition: transform .1s ease;
+    }
+
+    #cursor svg { width: 20px; height: 20px; }
+
+    /* Scanlines */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 2px,
+        rgba(0,229,255,0.012) 2px, rgba(0,229,255,0.012) 4px
+      );
+      pointer-events: none; z-index: 50;
+    }
+
+    #bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+    /* ─── TOPBAR ─── */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      height: 52px;
+      background: rgba(2,8,10,0.95);
+      border-bottom: 1px solid rgba(0,229,255,0.08);
+      display: flex; align-items: center; padding: 0 48px;
+      backdrop-filter: blur(8px);
+    }
+
+    .topbar-logo {
+      font-family: var(--mono2); font-size: 0.78rem;
+      color: var(--cyan); letter-spacing: 0.1em;
+      text-shadow: 0 0 12px var(--cyan-dim); flex: 1;
+    }
+
+    .topbar-logo span { color: rgba(255,255,255,.2); }
+
+    .topbar-nav {
+      display: flex; gap: 36px; list-style: none;
+      font-size: 0.6rem; letter-spacing: 0.16em; text-transform: uppercase;
+    }
+
+    .topbar-nav a { color: var(--text-dim); text-decoration: none; transition: color .2s; }
+    .topbar-nav a:hover, .topbar-nav a.active { color: var(--cyan); text-shadow: 0 0 8px var(--cyan-dim); }
+
+    .topbar-count {
+      margin-left: 40px; font-size: 0.58rem;
+      color: var(--cyan-dark); letter-spacing: 0.1em;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .live-dot {
+      width: 6px; height: 6px; background: var(--green);
+      border-radius: 50%; box-shadow: 0 0 8px var(--green);
+      animation: livePulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes livePulse { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+    /* ─── HERO ─── */
+    .hero {
+      position: relative; z-index: 2;
+      padding: 100px 48px 0;
+      min-height: 56vh;
+      display: flex; flex-direction: column; justify-content: center;
+      overflow: hidden;
+    }
+
+    .hero-line1 {
+      font-family: var(--mono2); font-size: 0.65rem;
+      color: var(--cyan-dark); letter-spacing: 0.3em;
+      text-transform: uppercase; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 12px;
+    }
+
+    .hero-line1::before {
+      content: ''; width: 36px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--cyan-dark));
+    }
+
+    .hero-title {
+      font-family: var(--display); font-weight: 800;
+      font-size: clamp(3.2rem, 8vw, 8rem);
+      line-height: 0.9; letter-spacing: -0.02em;
+      color: var(--text-bright);
+    }
+
+    .hero-title .t-cyan {
+      color: var(--cyan);
+      text-shadow: 0 0 40px rgba(0,229,255,.35), 0 0 80px rgba(0,229,255,.1);
+    }
+
+    .hero-title .t-outline {
+      -webkit-text-stroke: 1px rgba(0,229,255,.25);
+      color: transparent;
+    }
+
+    .hero-sub {
+      margin-top: 24px; max-width: 560px;
+      font-size: 0.85rem; color: var(--text-dim);
+      line-height: 1.7; font-weight: 300;
+    }
+
+    .hero-sub strong { color: var(--text); font-weight: 600; }
+
+    /* ─── FILTER BAR ─── */
+    .filter-bar {
+      position: relative; z-index: 2;
+      padding: 32px 48px;
+      display: flex; align-items: center;
+      gap: 10px; flex-wrap: wrap;
+      border-bottom: 1px solid rgba(0,229,255,0.06);
+    }
+
+    .filter-label {
+      font-size: 0.58rem; color: var(--text-dim);
+      letter-spacing: 0.18em; text-transform: uppercase;
+      margin-right: 8px;
+    }
+
+    .filter-btn {
+      font-family: var(--mono); font-size: 0.6rem;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 7px 16px; background: transparent;
+      border: 1px solid rgba(0,229,255,0.12);
+      color: var(--text-dim); cursor: pointer;
+      transition: all .2s;
+    }
+
+    .filter-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+
+    .filter-btn.active {
+      background: rgba(0,229,255,0.08);
+      border-color: var(--cyan); color: var(--cyan);
+      box-shadow: 0 0 12px rgba(0,229,255,0.08);
+    }
+
+    .filter-count {
+      margin-left: auto; font-size: 0.58rem;
+      color: var(--text-dim); letter-spacing: 0.1em;
+    }
+
+    .filter-count span { color: var(--cyan); }
+
+    /* ─── TEAM GRID ─── */
+    .team-section {
+      position: relative; z-index: 2;
+      padding: 40px 48px 120px;
+    }
+
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+    }
+
+    @media(max-width:1100px) { .team-grid { grid-template-columns: repeat(2,1fr); } }
+    @media(max-width:680px)  { .team-grid { grid-template-columns: 1fr; } }
+
+    /* ─── MEMBER CARD ─── */
+    .member-card {
+      background: var(--bg2);
+      position: relative; overflow: hidden;
+      transition: background .3s;
+      cursor: none;
+    }
+
+    .member-card:hover { background: var(--bg3); }
+
+    /* Top scan line on hover */
+    .member-card::before {
+      content: '';
+      position: absolute; top: 0; left: -100%; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+      transition: left .6s ease;
+    }
+
+    .member-card:hover::before { left: 0; }
+
+    /* Side accent */
+    .member-card::after {
+      content: '';
+      position: absolute; left: 0; top: 0; bottom: 0;
+      width: 2px; background: var(--text-dim);
+      transition: background .3s, box-shadow .3s;
+    }
+
+    .member-card:hover::after {
+      background: var(--cyan);
+      box-shadow: 0 0 12px var(--cyan-dim);
+    }
+
+    .card-inner { padding: 32px 30px 28px 34px; }
+
+    /* Header row */
+    .card-header {
+      display: flex; align-items: flex-start;
+      gap: 18px; margin-bottom: 22px;
+    }
+
+    /* Avatar */
+    .avatar-wrap {
+      position: relative; flex-shrink: 0;
+    }
+
+    .avatar {
+      width: 72px; height: 72px;
+      background: var(--bg3);
+      border: 1px solid rgba(0,229,255,0.15);
+      display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+      transition: border-color .3s;
+    }
+
+    .member-card:hover .avatar {
+      border-color: var(--cyan);
+      box-shadow: 0 0 20px rgba(0,229,255,0.12);
+    }
+
+    /* Avatar initials */
+    .avatar-initials {
+      font-family: var(--display); font-weight: 800;
+      font-size: 1.6rem; color: var(--cyan-dark);
+      letter-spacing: -0.02em;
+      transition: color .3s;
+      position: relative; z-index: 1;
+    }
+
+    .member-card:hover .avatar-initials { color: var(--cyan); }
+
+    /* Scan effect inside avatar */
+    .avatar-scan {
+      position: absolute; inset: 0;
+      background: linear-gradient(0deg, transparent 0%, rgba(0,229,255,.08) 50%, transparent 100%);
+      transform: translateY(-100%);
+      transition: transform .0s;
+      animation: none;
+    }
+
+    .member-card:hover .avatar-scan {
+      animation: avatarScan .8s ease forwards;
+    }
+
+    @keyframes avatarScan {
+      from { transform: translateY(-100%); }
+      to   { transform: translateY(100%); }
+    }
+
+    /* Role badge on avatar */
+    .role-badge {
+      position: absolute; bottom: -1px; left: -1px;
+      font-size: 0.5rem; letter-spacing: 0.1em;
+      text-transform: uppercase; padding: 2px 6px;
+      font-weight: 700;
+    }
+
+    .rb-red    { background: var(--red); color: #000; }
+    .rb-blue   { background: var(--cyan); color: #000; }
+    .rb-green  { background: var(--green); color: #000; }
+    .rb-amber  { background: var(--amber); color: #000; }
+    .rb-purple { background: #c084fc; color: #000; }
+    .rb-white  { background: var(--text-bright); color: #000; }
+
+    .card-id-block { flex: 1; min-width: 0; }
+
+    .card-id-num {
+      font-size: 0.55rem; color: var(--cyan-dark);
+      letter-spacing: 0.2em; margin-bottom: 5px;
+    }
+
+    .card-handle {
+      font-family: var(--mono2); font-size: 0.78rem;
+      color: var(--cyan); letter-spacing: 0.06em;
+      margin-bottom: 3px;
+    }
+
+    .card-handle::before { content: '~/'; opacity: 0.45; }
+
+    .card-name {
+      font-family: var(--display); font-weight: 800;
+      font-size: 1.25rem; color: var(--text-bright);
+      letter-spacing: -0.01em; line-height: 1.1;
+      margin-bottom: 3px;
+    }
+
+    .card-title {
+      font-size: 0.68rem; color: var(--text-dim);
+      letter-spacing: 0.08em; text-transform: uppercase;
+    }
+
+    /* Divider */
+    .card-divider {
+      height: 1px; margin: 0 0 20px;
+      background: linear-gradient(90deg, rgba(0,229,255,0.12), transparent);
+    }
+
+    /* Bio */
+    .card-bio {
+      font-size: 0.8rem; color: var(--text);
+      line-height: 1.65; font-weight: 300;
+      margin-bottom: 18px;
+    }
+
+    /* Specialties */
+    .card-specs-label {
+      font-size: 0.52rem; color: var(--cyan-dark);
+      letter-spacing: 0.22em; text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .card-specs {
+      display: flex; flex-wrap: wrap; gap: 5px;
+      margin-bottom: 18px;
+    }
+
+    .spec {
+      font-size: 0.55rem; letter-spacing: 0.1em;
+      text-transform: uppercase; padding: 3px 9px;
+      border: 1px solid;
+    }
+
+    .spec-red    { color: var(--red);   border-color: rgba(255,56,85,.25);  background: rgba(255,56,85,.04); }
+    .spec-cyan   { color: var(--cyan);  border-color: rgba(0,229,255,.2);   background: rgba(0,229,255,.03); }
+    .spec-green  { color: var(--green); border-color: rgba(57,255,142,.2);  background: rgba(57,255,142,.03); }
+    .spec-amber  { color: var(--amber); border-color: rgba(255,170,0,.2);   background: rgba(255,170,0,.03); }
+    .spec-purple { color: #c084fc;      border-color: rgba(192,132,252,.2); background: rgba(192,132,252,.03); }
+    .spec-dim    { color: var(--text-dim); border-color: rgba(61,101,117,.3); background: transparent; }
+
+    /* Certs */
+    .card-certs-label {
+      font-size: 0.52rem; color: var(--cyan-dark);
+      letter-spacing: 0.22em; text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .card-certs {
+      display: flex; flex-wrap: wrap; gap: 5px;
+      margin-bottom: 22px;
+    }
+
+    .cert-tag {
+      font-family: var(--mono2); font-size: 0.58rem;
+      padding: 3px 9px;
+      background: rgba(0,229,255,0.05);
+      border: 1px solid rgba(0,229,255,0.12);
+      color: var(--text-dim); letter-spacing: 0.06em;
+      transition: all .2s;
+    }
+
+    .cert-tag.hot {
+      background: rgba(0,229,255,0.08);
+      border-color: rgba(0,229,255,0.3);
+      color: var(--cyan);
+    }
+
+    .member-card:hover .cert-tag.hot {
+      box-shadow: 0 0 8px rgba(0,229,255,0.12);
+    }
+
+    /* Stats row */
+    .card-stats {
+      display: grid; grid-template-columns: repeat(3,1fr);
+      gap: 1px; background: rgba(0,229,255,0.05);
+      margin: 0 -30px -28px -34px;
+    }
+
+    .cs-cell {
+      background: var(--bg2); padding: 14px 16px;
+      text-align: center;
+      transition: background .3s;
+    }
+
+    .member-card:hover .cs-cell { background: var(--bg3); }
+
+    .cs-num {
+      font-family: var(--display); font-weight: 800;
+      font-size: 1.4rem; color: var(--cyan); line-height: 1;
+      margin-bottom: 3px;
+      text-shadow: 0 0 12px rgba(0,229,255,.3);
+    }
+
+    .cs-label {
+      font-size: 0.48rem; color: var(--text-dim);
+      letter-spacing: 0.14em; text-transform: uppercase;
+    }
+
+    /* ─── OPEN POSITION CARD ─── */
+    .open-card {
+      background: var(--bg2);
+      border: 1px dashed rgba(0,229,255,0.12);
+      position: relative; overflow: hidden;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 48px 32px; text-align: center;
+      min-height: 400px;
+      transition: border-color .3s, background .3s;
+      cursor: pointer;
+    }
+
+    .open-card:hover {
+      border-color: rgba(0,229,255,0.3);
+      background: var(--bg3);
+    }
+
+    .open-icon {
+      width: 60px; height: 60px; margin: 0 auto 20px;
+      border: 1px dashed rgba(0,229,255,0.25);
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color .3s;
+    }
+
+    .open-card:hover .open-icon { border-color: var(--cyan); }
+
+    .open-title {
+      font-family: var(--display); font-weight: 800;
+      font-size: 1.1rem; color: rgba(0,229,255,0.5);
+      letter-spacing: -0.01em; margin-bottom: 10px;
+      transition: color .3s;
+    }
+
+    .open-card:hover .open-title { color: var(--cyan); }
+
+    .open-sub {
+      font-size: 0.72rem; color: var(--text-dim);
+      max-width: 220px; line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .open-req {
+      font-size: 0.58rem; color: rgba(0,229,255,0.3);
+      letter-spacing: 0.12em;
+    }
+
+    /* ─── STATS STRIP ─── */
+    .team-stats {
+      position: relative; z-index: 2;
+      display: grid; grid-template-columns: repeat(6,1fr);
+      gap: 1px; background: rgba(0,229,255,0.06);
+    }
+
+    @media(max-width:900px) { .team-stats { grid-template-columns: repeat(3,1fr); } }
+    @media(max-width:500px) { .team-stats { grid-template-columns: 1fr 1fr; } }
+
+    .ts-cell {
+      background: var(--bg2); padding: 28px 16px; text-align: center;
+    }
+
+    .ts-num {
+      font-family: var(--display); font-weight: 800;
+      font-size: 2.2rem; line-height: 1; margin-bottom: 6px;
+    }
+
+    .tn-cyan  { color: var(--cyan); text-shadow: 0 0 16px rgba(0,229,255,.4); }
+    .tn-green { color: var(--green); text-shadow: 0 0 16px rgba(57,255,142,.4); }
+    .tn-amber { color: var(--amber); }
+    .tn-red   { color: var(--red); }
+    .tn-white { color: var(--text-bright); }
+
+    .ts-lbl {
+      font-size: 0.5rem; color: var(--text-dim);
+      letter-spacing: 0.16em; text-transform: uppercase;
+    }
+
+    /* ─── CERTS SHOWCASE ─── */
+    .certs-section {
+      position: relative; z-index: 2;
+      padding: 80px 48px;
+      border-top: 1px solid rgba(0,229,255,0.06);
+    }
+
+    .certs-title {
+      font-family: var(--mono2); font-size: 0.62rem;
+      color: var(--cyan-dark); letter-spacing: 0.3em;
+      text-transform: uppercase; margin-bottom: 30px;
+    }
+
+    .certs-grid {
+      display: flex; flex-wrap: wrap; gap: 8px;
+    }
+
+    .cert-pill {
+      font-family: var(--mono2); font-size: 0.62rem;
+      letter-spacing: 0.1em; padding: 8px 16px;
+      border: 1px solid rgba(0,229,255,0.12);
+      color: var(--text-dim);
+      background: rgba(0,229,255,0.02);
+      transition: all .2s;
+    }
+
+    .cert-pill:hover {
+      border-color: var(--cyan); color: var(--cyan);
+      background: rgba(0,229,255,0.05);
+    }
+
+    .cert-pill.featured {
+      border-color: rgba(0,229,255,0.25); color: var(--cyan);
+      background: rgba(0,229,255,0.05);
+    }
+
+    /* ─── JOIN SECTION ─── */
+    .join-section {
+      position: relative; z-index: 2;
+      margin: 0 48px 80px;
+      background: var(--bg2);
+      border: 1px solid rgba(0,229,255,0.08);
+      border-top: 2px solid var(--cyan-dark);
+      overflow: hidden;
+    }
+
+    .join-inner {
+      display: grid; grid-template-columns: 1fr 380px;
+      gap: 0;
+    }
+
+    @media(max-width:850px) { .join-inner { grid-template-columns: 1fr; } }
+
+    .join-left { padding: 56px 52px; }
+
+    .join-tag {
+      font-size: 0.58rem; color: var(--cyan-dark);
+      letter-spacing: 0.28em; text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .join-tag::before { content: '> '; }
+
+    .join-title {
+      font-family: var(--display); font-weight: 800;
+      font-size: clamp(1.8rem, 4vw, 3.2rem);
+      color: var(--text-bright); line-height: 1.05;
+      letter-spacing: -0.02em; margin-bottom: 16px;
+    }
+
+    .join-title span { color: var(--cyan); text-shadow: 0 0 20px rgba(0,229,255,.3); }
+
+    .join-body {
+      font-size: 0.82rem; color: var(--text-dim);
+      line-height: 1.7; font-weight: 300;
+      max-width: 440px; margin-bottom: 32px;
+    }
+
+    .btn-cyan {
+      font-family: var(--mono); font-size: 0.68rem;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      padding: 14px 32px; background: var(--cyan);
+      color: #000; border: none; cursor: none;
+      font-weight: 700; text-decoration: none;
+      display: inline-block;
+      clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+      transition: all .2s;
+    }
+
+    .btn-cyan:hover { background: #33eeff; box-shadow: 0 0 28px rgba(0,229,255,.5); }
+
+    /* Requirements panel */
+    .join-right {
+      background: var(--bg3);
+      border-left: 1px solid rgba(0,229,255,0.06);
+      padding: 40px 36px;
+    }
+
+    .req-title {
+      font-size: 0.58rem; color: var(--cyan-dark);
+      letter-spacing: 0.22em; text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+
+    .req-title::before { content: '// '; opacity: 0.6; }
+
+    .req-item {
+      display: flex; gap: 12px; padding: 10px 0;
+      border-bottom: 1px solid rgba(0,229,255,0.04);
+    }
+
+    .req-item:last-child { border-bottom: none; }
+
+    .req-check {
+      font-size: 0.7rem; margin-top: 1px;
+      flex-shrink: 0;
+    }
+
+    .req-check.must { color: var(--green); }
+    .req-check.good { color: var(--cyan); }
+    .req-check.nice { color: var(--text-dim); }
+
+    .req-text {
+      font-size: 0.78rem; color: var(--text-dim);
+      line-height: 1.5;
+    }
+
+    .req-label {
+      font-size: 0.5rem; color: var(--cyan-dark);
+      letter-spacing: 0.18em; text-transform: uppercase;
+      display: block; margin-bottom: 1px;
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      position: relative; z-index: 2;
+      border-top: 1px solid rgba(0,229,255,0.06);
+      padding: 28px 48px;
+      display: flex; align-items: center;
+      justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    }
+
+    .footer-logo {
+      font-family: var(--mono2); font-size: 0.7rem;
+      color: var(--cyan-dark); letter-spacing: 0.1em;
+    }
+
+    .footer-links {
+      display: flex; gap: 24px;
+      font-size: 0.58rem; letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .footer-links a { color: var(--text-dim); text-decoration: none; transition: color .2s; }
+    .footer-links a:hover { color: var(--cyan); }
+
+    .footer-copy { font-size: 0.56rem; color: #0a2530; letter-spacing: 0.06em; }
+
+    .cursor-blink::after {
+      content: '█'; color: var(--cyan);
+      animation: blink 1s step-end infinite;
+    }
+
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* Fade in */
+    .fade-in { opacity: 0; transform: translateY(18px); transition: opacity .55s ease, transform .55s ease; }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+    /* Stagger children */
+    .stagger > * { opacity: 0; transform: translateY(16px); transition: opacity .5s ease, transform .5s ease; }
+    .stagger.visible > *:nth-child(1) { opacity:1; transform:none; transition-delay:.05s; }
+    .stagger.visible > *:nth-child(2) { opacity:1; transform:none; transition-delay:.12s; }
+    .stagger.visible > *:nth-child(3) { opacity:1; transform:none; transition-delay:.19s; }
+    .stagger.visible > *:nth-child(4) { opacity:1; transform:none; transition-delay:.26s; }
+    .stagger.visible > *:nth-child(5) { opacity:1; transform:none; transition-delay:.33s; }
+    .stagger.visible > *:nth-child(6) { opacity:1; transform:none; transition-delay:.40s; }
+    .stagger.visible > *:nth-child(7) { opacity:1; transform:none; transition-delay:.47s; }
+    .stagger.visible > *:nth-child(8) { opacity:1; transform:none; transition-delay:.54s; }
+
+    @media(max-width:768px) {
+      .topbar { padding: 0 20px; }
+      .topbar-nav { display: none; }
+      .hero { padding: 100px 22px 0; }
+      .filter-bar { padding: 22px; }
+      .team-section { padding: 28px 22px 80px; }
+      .certs-section { padding: 50px 22px; }
+      .join-section { margin: 0 22px 60px; }
+      .join-left { padding: 36px 24px; }
+      .join-right { padding: 28px 24px; }
+      footer { padding: 22px 20px; }
+    }
+  </style>
 </head>
 <body>
-    
+
+<!-- Custom cursor -->
+<div id="cursor">
+  <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <line x1="10" y1="2" x2="10" y2="18" stroke="#00e5ff" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="2" y1="10" x2="18" y2="10" stroke="#00e5ff" stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="10" cy="10" r="3" stroke="#00e5ff" stroke-width="1" fill="none"/>
+  </svg>
+</div>
+
+<canvas id="bg-canvas"></canvas>
+
+<!-- TOPBAR -->
+<nav class="topbar">
+  <div class="topbar-logo">OFFENSIVE<span>::</span>CORE</div>
+  <div class="topbar-count">
+    <div class="live-dot"></div>
+    <span id="member-count">18</span> OPERADORES ACTIVOS
+  </div>
+</nav>
+
+<!-- ─── HERO ─── -->
+<section class="hero">
+  <div class="hero-line1">Offensive Core · Operadores · Expedientes</div>
+  <h1 class="hero-title">
+    <span class="t-cyan">NUESTRO</span><br>
+    <span class="t-outline">EQUIPO</span>
+  </h1>
+  <p class="hero-sub">
+    <strong>18 especialistas</strong> con background en inteligencia militar, investigación de vulnerabilidades y operaciones ofensivas de élite. Cada miembro ha sido seleccionado por su profundidad técnica y su compromiso irrenunciable con la ética.
+  </p>
+</section>
+
+<!-- STATS STRIP -->
+<div class="team-stats fade-in">
+  <div class="ts-cell">
+    <div class="ts-num tn-cyan" data-target="18">0</div>
+    <div class="ts-lbl">Especialistas</div>
+  </div>
+  <div class="ts-cell">
+    <div class="ts-num tn-white" data-target="47">0</div>
+    <div class="ts-lbl">Certificaciones activas</div>
+  </div>
+  <div class="ts-cell">
+    <div class="ts-num tn-amber" data-target="9">0</div>
+    <div class="ts-lbl">CVEs publicados</div>
+  </div>
+  <div class="ts-cell">
+    <div class="ts-num tn-green" data-target="12">0</div>
+    <div class="ts-lbl">Conferencias (2024)</div>
+  </div>
+  <div class="ts-cell">
+    <div class="ts-num tn-red" data-target="140">0</div>
+    <div class="ts-lbl">Engagements completados</div>
+  </div>
+  <div class="ts-cell">
+    <div class="ts-num tn-white" data-target="6">0</div>
+    <div class="ts-lbl">Años de operación</div>
+  </div>
+</div>
+
+<!-- FILTER BAR -->
+<div class="filter-bar fade-in">
+  <span class="filter-label">Filtrar:</span>
+  <button class="filter-btn active" data-filter="all" onclick="filterTeam(this,'all')">Todos</button>
+  <button class="filter-btn" data-filter="leadership" onclick="filterTeam(this,'leadership')">Liderazgo</button>
+  <button class="filter-btn" data-filter="redteam" onclick="filterTeam(this,'redteam')">Red Team</button>
+  <button class="filter-btn" data-filter="research" onclick="filterTeam(this,'research')">Investigación</button>
+  <button class="filter-btn" data-filter="cloud" onclick="filterTeam(this,'cloud')">Cloud</button>
+  <button class="filter-btn" data-filter="social" onclick="filterTeam(this,'social')">Social Eng.</button>
+  <span class="filter-count">Mostrando <span id="visible-count">9</span> operadores</span>
+</div>
+
+<!-- ─── TEAM GRID ─── -->
+<section class="team-section">
+  <div class="team-grid stagger" id="team-grid">
+
+    <!-- 1 · CEO -->
+    <div class="member-card" data-category="leadership redteam">
+      <div class="card-inner">
+        <div class="card-header">
+          <div class="avatar-wrap">
+            <div class="avatar">
+              <div class="avatar-scan"></div>
+              <div class="avatar-initials">AT</div>
+            </div>
+            <div class="role-badge rb-red">CEO</div>
+          </div>
+          <div class="card-id-block">
+            <div class="card-id-num">OC-001 · CDMX</div>
+            <div class="card-handle">d4rk_op3r4tor</div>
+            <div class="card-name">Alejandro Torres</div>
+            <div class="card-title">CEO · Lead Red Team Operator</div>
+          </div>
+        </div>
+        <div class="card-divider"></div>
+        <p class="card-bio">15 años en ciberseguridad ofensiva. Ex-analista de inteligencia en el sector de defensa nacional. Especialista en APT simulation, adversary emulation y desarrollo de cadenas de ataque complejas. Ponente en BlackHat Europe y RootedCON.</p>
+        <div class="card-specs-label">// especialidades</div>
+        <div class="card-specs">
+          <span class="spec spec-red">APT Simulation</span>
+          <span class="spec spec-red">Adversary Emulation</span>
+          <span class="spec spec-cyan">C2 Framework Dev</span>
+          <span class="spec spec-dim">OSINT</span>
+        </div>
+        <div class="card-certs-label">// certificaciones</div>
+        <div class="card-certs">
+          <span class="cert-tag hot">OSCP</span>
+          <span class="cert-tag hot">CRTO</span>
+          <span class="cert-tag hot">CRTE</span>
+          <span class="cert-tag">CISSP</span>
+          <span class="cert-tag">CEH Master</span>
+        </div>
+      </div>
+      <div class="card-stats">
+        <div class="cs-cell"><div class="cs-num">80+</div><div class="cs-label">Engagements</div></div>
+        <div class="cs-cell"><div class="cs-num">6</div><div class="cs-label">Conf. talks</div></div>
+        <div class="cs-cell"><div class="cs-num">2</div><div class="cs-label">CVEs</div></div>
+      </div>
+    </div>
+
+    <!-- 2 · CTO -->
+    <div class="member-card" data-category="leadership research">
+      <div class="card-inner">
+        <div class="card-header">
+          <div class="avatar-wrap">
+            <div class="avatar">
+              <div class="avatar-scan"></div>
+              <div class="avatar-initials">SJ</div>
+            </div>
+            <div class="role-badge rb-blue">CTO</div>
+          </div>
+          <div class="card-id-block">
+            <div class="card-id-num">OC-002 · BARCELONA</div>
+            <div class="card-handle">s1l3nt_w0lf</div>
+            <div class="card-name">Sara Jiménez</div>
+            <div class="card-title">CTO · Exploit Developer</div>
+          </div>
+        </div>
+        <div class="card-divider"></div>
+        <p class="card-bio">Investigadora de vulnerabilidades con 4 CVEs publicados en productos enterprise. Ex-CERN y Telefónica I+D. Especialista en desarrollo de exploits, bypass de soluciones EDR/AV y análisis avanzado de malware. MSc Seguridad de Sistemas (UPM).</p>
+        <div class="card-specs-label">// especialidades</div>
+        <div class="card-specs">
+          <span class="spec spec-red">Exploit Dev</span>
+          <span class="spec spec-red">EDR Bypass</span>
+          <span class="spec spec-amber">Malware Analysis</span>
+          <span class="spec spec-cyan">Vuln Research</span>
+        </div>
+        <div class="card-certs-label">// certificaciones</div>
+        <div class="card-certs">
+          <span class="cert-tag hot">OSED</span>
+          <span class="cert-tag hot">OSEP</span>
+          <span class="cert-tag hot">OSCP</span>
+          <span class="cert-tag">GREM</span>
+          <span class="cert-tag">GWEB</span>
+        </div>
+      </div>
+      <div class="card-stats">
+        <div class="cs-cell"><div class="cs-num">4</div><div class="cs-label">CVEs</div></div>
+        <div class="cs-cell"><div class="cs-num">5</div><div class="cs-label">Papers</div></div>
+        <div class="cs-cell"><div class="cs-num">3</div><div class="cs-label">Conf. talks</div></div>
+      </div>
+    </div>
+
+    <!-- 3 · COO -->
+    <div class="member-card" data-category="leadership social">
+      <div class="card-inner">
+        <div class="card-header">
+          <div class="avatar-wrap">
+            <div class="avatar">
+              <div class="avatar-scan"></div>
+              <div class="avatar-initials">DN</div>
+            </div>
+            <div class="role-badge rb-purple">COO</div>
+          </div>
+          <div class="card-id-block">
+            <div class="card-id-num">OC-003 · MADRID</div>
+            <div class="card-handle">ph4ntom_r3con</div>
+            <div class="card-name">Diego Navarro</div>
+            <div class="card-title">COO · Social Engineering Lead</div>
+          </div>
+        </div>
+        <div class="card-divider"></div>
+        <p class="card-bio">Especialista en HUMINT y operaciones de ingeniería social. Psicólogo organizacional reconvertido al Red Team. 8 años simulando campañas de phishing, vishing y pretexting para Fortune 500. Ex-consultor de riesgos en PwC.</p>
+        <div class="card-specs-label">// especialidades</div>
+        <div class="card-specs">
+          <span class="spec spec-purple">Social Engineering</span>
+          <span class="spec spec-purple">HUMINT</span>
+          <span class="spec spec-amber">Phishing Campaigns</span>
+          <span class="spec spec-dim">Pretexting</span>
+        </div>
+        <div class="card-certs-label">// certificaciones</div>
+        <div class="card-certs">
+          <span class="cert-tag hot">OSCP</span>
+          <span class="cert-tag">SEC504</span>
+          <span class="cert-tag">CISM</span>
+          <span class="cert-tag">PMP</span>
+        </div>
+      </div>
+      <div class="card-stats">
+        <div class="cs-cell"><div class="cs-num">200+</div><div class="cs-label">Campañas</div></div>
+        <div class="cs-cell"><div class="cs-num">97%</div><div class="cs-label">Click rate</div></div>
+        <div class="cs-cell"><div class="cs-num">1</div><div class="cs-label">CVEs</div></div>
+      </div>
+    </div>
+
+    <!-- 4 · Cloud -->
+    <div class="member-card" data-category="cloud redteam">
+      <div class="card-inner">
+        <div class="card-header">
+          <div class="avatar-wrap">
+            <div class="avatar">
+              <div class="avatar-scan"></div>
+              <div class="avatar-initials">MC</div>
+            </div>
+            <div class="role-badge rb-cyan">SR</div>
+          </div>
+          <div class="card-id-block">
+            <div class="card-id-num">OC-004 · CDMX</div>
+            <div class="card-handle">cl0ud_0wn3r</div>
+            <div class="card-name">María Castillo</div>
+            <div class="card-title">Sr. Cloud Security Specialist</div>
+          </div>
+        </div>
+        <div class="card-divider"></div>
+        <p class="card-bio">Arquitecta cloud ofensiva con 7 años atacando entornos AWS, Azure y GCP. Ex-Amazon Web Services como Solutions Architect. Especialista en IAM privilege escalation, misconfiguraciones, S3 enumeration y serverless attacks.</p>
+        <div class="card-specs-label">// especialidades</div>
+        <div class="card-specs">
+          <span class="spec spec-cyan">AWS Offensive</span>
+          <span class="spec spec-cyan">Azure AD Attacks</span>
+          <span class="spec spec-green">IAM Escalation</span>
+          <span class="spec spec-dim">Terraform Abuse</span>
+        </div>
+        <div class="card-certs-label">// certificaciones</div>
+        <div class="card-certs">
+          <span class="cert-tag hot">AWS SAP</span>
+          <span class="cert-tag hot">AZ-500</span>
+          <span class="cert-tag hot">OSCP</span>
+          <span class="cert-tag">CCSP</span>
+          <span class="cert-tag">GCP-PSE</span>
+        </div>
+      </div>
+      <div class="card-stats">
+        <div class="cs-cell"><div class="cs-num">45+</div><div class="cs-label">Engagements</div></div>
+        <div class="cs-cell"><div class="cs-num">1</div><div class="cs-label">CVEs</div></div>
+        <div class="cs-cell"><div class="cs-num">5</div><div class="cs-label">Cert. activas</div></div>
+      </div>
+    </div>
+
+    <!-- 5 · AD -->
+    <div class="member-card" data-category="redteam research">
+      <div class="card-inner">
+        <div class="card-header">
+          <div class="avatar-wrap">
+            <div class="avatar">
+              <div class="avatar-scan"></div>
+              <div class="avatar-initials">CR</div>
+            </div>
+            <div class="role-badge rb-green">SR</div>
+          </div>
+          <div class="card-id-block">
+            <div class="card-id-num">OC-005 · BILBAO</div>
+            <div class="card-handle">ad_h4ck3r</div>
+            <div class="card-name">Carlos Ruiz</div>
+            <div class="card-title">Sr. Active Directory Specialist</div>
+          </div>
+        </div>
+        <div class="card-divider"></div>
+        <p class="card-bio">Especialista en entornos Windows y Active Directory. Autor de 3 herramientas open source para enumeración y ataque de AD (combinadas >4k GitHub stars). Ponente en No cON Name 2022 y 2023. Background en sysadmin enterprise.</p>
+        <div class="card-specs-label">// especialidades</div>
+        <div class="card-specs">
+          <span class="spec spec-red">Kerberoasting</span>
+          <span class="spec spec-red">DCSync / DCShadow</span>
+          <span class="spec spec-amber">BloodHound</span>
+          <span class="spec spec-cyan">ADCS Attacks</span>
+        </div>
+        <div class="card-certs-label">// certificaciones</div>
+        <div class="card-certs">
+          <span class="cert-tag hot">CRTO II</span>
+          <span class="cert-tag hot">OSCP</span>
+          <span class="cert-tag hot">eCPTX</span>
+          <span class="cert-tag">MCSE</span>
+        </div>
+      </div>
+      <div class="card-stats">
+        <div class="cs-cell"><div class="cs-num">3</div><div class="cs-label">OSS Tools</div></div>
+        <div class="cs-cell"><div class="cs-num">4k+</div><div class="cs-label">GitHub ⭐</div></div>
+        <div class="cs-cell"><div class="cs-num">1</div><div class="cs-label">CVEs</div></div>
+      </div>
+    </div>
+
+    <!-- 6 · Web / AppSec -->
+    <div class="member-card" data-category="redteam research">
+      <div class="card-inner">
+        <div class="card-header">
+          <div class="avatar-wrap">
+            <div class="avatar">
+              <div class="avatar-scan"></div>
+              <div class="avatar-initials">LP</div>
+            </div>
+            <div class="role-badge rb-amber">SR</div>
+          </div>
+          <div class="card-id-block">
+            <div class="card-id-num">OC-006 · VALENCIA</div>
+            <div class="card-handle">w3b_0wr</div>
+            <div class="card-name">Laura Pérez</div>
+            <div class="card-title">Sr. Web Application Security</div>
+          </div>
+        </div>
+        <div class="card-divider"></div>
+        <p class="card-bio">Especialista en seguridad de aplicaciones web y APIs. Investigadora en el programa de bug bounty de HackerOne con más de 80 vulnerabilidades reportadas y Hall of Fame en Google, Microsoft y Apple. Coautora del OWASP Testing Guide v5.</p>
+        <div class="card-specs-label">// especialidades</div>
+        <div class="card-specs">
+          <span class="spec spec-red">OWASP Top 10</span>
+          <span class="spec spec-amber">API Security</span>
+          <span class="spec spec-green">Bug Bounty</span>
+          <span class="spec spec-dim">GraphQL Attacks</span>
+        </div>
+        <div class="card-certs-label">// certificaciones</div>
+        <div class="card-certs">
+          <span class="cert-tag hot">OSWE</span>
+          <span class="cert-tag hot">BSCP</span>
+          <span class="cert-tag">eWPTX</span>
+          <span class="cert-tag">GWEB</span>
+        </div>
+      </div>
+      <div class="card-stats">
+        <div class="cs-cell"><div class="cs-num">80+</div><div class="cs-label">Bug Bounties</div></div>
+        <div class="cs-cell"><div class="cs-num">3x</div><div class="cs-label">Hall of Fame</div></div>
+        <div class="cs-cell"><div class="cs-num">1</div><div class="cs-label">CVEs</div></div>
+      </div>
+    </div>
+
+    <!-- 7 · Mobile / ICS -->
+    <div class="member-card" data-category="redteam research">
+      <div class="card-inner">
+        <div class="card-header">
+          <div class="avatar-wrap">
+            <div class="avatar">
+              <div class="avatar-scan"></div>
+              <div class="avatar-initials">RM</div>
+            </div>
+            <div class="role-badge rb-white">MID</div>
+          </div>
+          <div class="card-id-block">
+            <div class="card-id-num">OC-007 · MÁLAGA</div>
+            <div class="card-handle">m0b1l3_pwn</div>
+            <div class="card-name">Rafael Mora</div>
+            <div class="card-title">Mobile & ICS Security Engineer</div>
+          </div>
+        </div>
+        <div class="card-divider"></div>
+        <p class="card-bio">Especialista en seguridad móvil (iOS/Android) y sistemas de control industrial (ICS/SCADA/OT). Ingeniero industrial reconvertido al hacking. Experiencia en sectores energético, agua y manufactura. Colaborador habitual de INCIBE.</p>
+        <div class="card-specs-label">// especialidades</div>
+        <div class="card-specs">
+          <span class="spec spec-amber">iOS Pentest</span>
+          <span class="spec spec-amber">Android Reversing</span>
+          <span class="spec spec-red">ICS/SCADA</span>
+          <span class="spec spec-dim">OT Networks</span>
+        </div>
+        <div class="card-certs-label">// certificaciones</div>
+        <div class="card-certs">
+          <span class="cert-tag hot">GICSP</span>
+          <span class="cert-tag hot">eMAPT</span>
+          <span class="cert-tag">OSCP</span>
+          <span class="cert-tag">GCIP</span>
+        </div>
+      </div>
+      <div class="card-stats">
+        <div class="cs-cell"><div class="cs-num">30+</div><div class="cs-label">Engagements</div></div>
+        <div class="cs-cell"><div class="cs-num">OT</div><div class="cs-label">Especialidad</div></div>
+        <div class="cs-cell"><div class="cs-num">2</div><div class="cs-label">Conf. talks</div></div>
+      </div>
+    </div>
+
+    <!-- 8 · Threat Intel -->
+    <div class="member-card" data-category="research">
+      <div class="card-inner">
+        <div class="card-header">
+          <div class="avatar-wrap">
+            <div class="avatar">
+              <div class="avatar-scan"></div>
+              <div class="avatar-initials">EH</div>
+            </div>
+            <div class="role-badge rb-purple">Sr</div>
+          </div>
+          <div class="card-id-block">
+            <div class="card-id-num">OC-008 · CDMX</div>
+            <div class="card-handle">th3_analyst</div>
+            <div class="card-name">Emiliano Hernández</div>
+            <div class="card-title">Threat Intelligence Analyst</div>
+          </div>
+        </div>
+        <div class="card-divider"></div>
+        <p class="card-bio">Especialista en Red Team con dominio de Linux y herramientas de hacking ético. Lidera ataques simulados en entornos reales. Guía al equipo y resuelve retos técnicos durante la operación.</p>
+        <div class="card-specs-label">// especialidades</div>
+        <div class="card-specs">
+          <span class="spec spec-purple">Advanced Penetration Testing</span>
+          <span class="spec spec-purple">Red Team Operations and Adversary Simulation</span>
+          <span class="spec spec-cyan">Strategic Risk Management</span>
+          <span class="spec spec-dim">Technical Leadership and Team Development</span>
+        </div>
+        <div class="card-certs-label">// certificaciones</div>
+        <div class="card-certs">
+          <span class="cert-tag hot">GCTI</span>
+          <span class="cert-tag hot">GCFE</span>
+          <span class="cert-tag">CISA</span>
+          <span class="cert-tag">FOR578</span>
+        </div>
+      </div>
+      <div class="card-stats">
+        <div class="cs-cell"><div class="cs-num">40+</div><div class="cs-label">APT Profiles</div></div>
+        <div class="cs-cell"><div class="cs-num">6</div><div class="cs-label">Años intel</div></div>
+        <div class="cs-cell"><div class="cs-num">1</div><div class="cs-label">Papers</div></div>
+      </div>
+    </div>
+
+    <!-- 9 · JOIN -->
+    <div class="open-card" onclick="window.location='mailto:jobs@offensivecore.io'" data-category="all">
+      <div class="open-icon">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <line x1="14" y1="6" x2="14" y2="22" stroke="#00e5ff" stroke-width="1.5" stroke-linecap="round" opacity=".4"/>
+          <line x1="6" y1="14" x2="22" y2="14" stroke="#00e5ff" stroke-width="1.5" stroke-linecap="round" opacity=".4"/>
+        </svg>
+      </div>
+      <div class="open-title">Posición Abierta</div>
+      <p class="open-sub">¿Tienes la mentalidad y las credenciales? El equipo crece — buscamos operadores de élite.</p>
+      <div class="open-req">OSCP o equivalente · Ética irrenunciable</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- CERTS SHOWCASE -->
+<div class="certs-section fade-in">
+  <div class="certs-title">// certificaciones colectivas del equipo</div>
+  <div class="certs-grid">
+    <span class="cert-pill featured">OSCP ×8</span>
+    <span class="cert-pill featured">OSEP ×3</span>
+    <span class="cert-pill featured">OSED ×2</span>
+    <span class="cert-pill featured">OSWE ×2</span>
+    <span class="cert-pill featured">CRTO ×4</span>
+    <span class="cert-pill featured">CRTE ×2</span>
+    <span class="cert-pill featured">eCPTX ×2</span>
+    <span class="cert-pill">CISSP ×3</span>
+    <span class="cert-pill">CISM ×2</span>
+    <span class="cert-pill">AWS SAP ×2</span>
+    <span class="cert-pill">AZ-500 ×3</span>
+    <span class="cert-pill">CCSP ×2</span>
+    <span class="cert-pill">GREM ×1</span>
+    <span class="cert-pill">GCTI ×2</span>
+    <span class="cert-pill">GICSP ×1</span>
+    <span class="cert-pill">GCFE ×1</span>
+    <span class="cert-pill">GWEB ×2</span>
+    <span class="cert-pill">CEH Master ×1</span>
+    <span class="cert-pill">eMAPT ×2</span>
+    <span class="cert-pill">BSCP ×1</span>
+    <span class="cert-pill">PMP ×1</span>
+    <span class="cert-pill featured">eWPTX ×2</span>
+  </div>
+</div>
+
+<!-- JOIN SECTION -->
+<div class="join-section fade-in">
+  <div class="join-inner">
+    <div class="join-left">
+      <div class="join-tag">08 · únete al equipo</div>
+      <h2 class="join-title">¿Eres el próximo<br><span>operador</span>?</h2>
+      <p class="join-body">No buscamos CVs bonitos. Buscamos gente que haya roto cosas de verdad, que documente lo que aprende y que entienda que la ética no es opcional. Si eso eres tú, escríbenos.</p>
+      <a href="" class="btn-cyan">Enviar Solicitud</a>
+    </div>
+
+    <div class="join-right">
+      <div class="req-title">requisitos</div>
+
+      <div class="req-item">
+        <div class="req-check must">✓</div>
+        <div class="req-text">
+          <span class="req-label">Imprescindible</span>
+          OSCP activo o certificación equivalente de nivel avanzado
+        </div>
+      </div>
+      <div class="req-item">
+        <div class="req-check must">✓</div>
+        <div class="req-text">
+          <span class="req-label">Imprescindible</span>
+          Portfolio técnico: writeups, herramientas, CVEs o bug bounties
+        </div>
+      </div>
+      <div class="req-item">
+        <div class="req-check must">✓</div>
+        <div class="req-text">
+          <span class="req-label">Imprescindible</span>
+          Inglés técnico escrito fluido (informes internacionales)
+        </div>
+      </div>
+      <div class="req-item">
+        <div class="req-check good">+</div>
+        <div class="req-text">
+          <span class="req-label">Valorable</span>
+          Especialización en un área: cloud, AD, exploit dev, mobile o social eng.
+        </div>
+      </div>
+      <div class="req-item">
+        <div class="req-check good">+</div>
+        <div class="req-text">
+          <span class="req-label">Valorable</span>
+          Contribuciones a proyectos open source o comunidad de seguridad
+        </div>
+      </div>
+      <div class="req-item">
+        <div class="req-check nice">○</div>
+        <div class="req-text">
+          <span class="req-label">Bonus</span>
+          Experiencia en presentaciones técnicas (conferencias, CTFs, workshops)
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">OFFENSIVE<span style="opacity:.3">::</span>CORE — Operations Team <span class="cursor-blink"></span></div>
+  <div class="footer-copy">© 2025 Offensive Core S.L. · Todos los operadores trabajan bajo NDA</div>
+</footer>
+
+<script>
+// ─── CURSOR ───
+const cur = document.getElementById('cursor');
+document.addEventListener('mousemove', e => {
+  cur.style.left = (e.clientX - 10) + 'px';
+  cur.style.top  = (e.clientY - 10) + 'px';
+});
+
+document.addEventListener('mousedown', () => cur.style.transform = 'scale(0.7)');
+document.addEventListener('mouseup',   () => cur.style.transform = 'scale(1)');
+
+// ─── CANVAS ───
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+
+function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+resize();
+window.addEventListener('resize', resize);
+
+// Circuit board lines
+const nodes2 = [];
+for (let i = 0; i < 30; i++) {
+  nodes2.push({
+    x: Math.random() * innerWidth,
+    y: Math.random() * innerHeight,
+    vx: (Math.random() - .5) * .2,
+    vy: (Math.random() - .5) * .2,
+    r: Math.random() * 1.5 + .5
+  });
+}
+
+// Data packets traveling along connections
+const packets = [];
+function spawnPacket() {
+  if (nodes2.length < 2) return;
+  const from = Math.floor(Math.random() * nodes2.length);
+  let to = Math.floor(Math.random() * nodes2.length);
+  while (to === from) to = Math.floor(Math.random() * nodes2.length);
+  packets.push({ from, to, t: 0, speed: Math.random() * 0.012 + 0.006 });
+}
+
+setInterval(spawnPacket, 600);
+
+// Horizontal data streams
+const streams = Array.from({length: 6}, () => ({
+  y: Math.random() * innerHeight,
+  x: Math.random() * innerWidth,
+  speed: Math.random() * 1.5 + 0.5,
+  len: Math.random() * 120 + 40,
+  a: Math.random() * 0.08 + 0.02
+}));
+
+function drawBg() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Connections between close nodes
+  for (let i = 0; i < nodes2.length; i++) {
+    for (let j = i+1; j < nodes2.length; j++) {
+      const dx = nodes2[i].x - nodes2[j].x;
+      const dy = nodes2[i].y - nodes2[j].y;
+      const d = Math.sqrt(dx*dx + dy*dy);
+      if (d < 160) {
+        const a = (1 - d/160) * 0.08;
+        ctx.beginPath();
+        ctx.moveTo(nodes2[i].x, nodes2[i].y);
+        ctx.lineTo(nodes2[j].x, nodes2[j].y);
+        ctx.strokeStyle = `rgba(0,229,255,${a})`;
+        ctx.lineWidth = .5;
+        ctx.stroke();
+      }
+    }
+  }
+
+  // Move + draw nodes
+  nodes2.forEach(n => {
+    n.x += n.vx; n.y += n.vy;
+    if (n.x < 0) n.x = canvas.width;
+    if (n.x > canvas.width) n.x = 0;
+    if (n.y < 0) n.y = canvas.height;
+    if (n.y > canvas.height) n.y = 0;
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, n.r, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(0,229,255,0.15)';
+    ctx.fill();
+  });
+
+  // Packets
+  for (let i = packets.length-1; i >= 0; i--) {
+    const p = packets[i];
+    p.t += p.speed;
+    if (p.t >= 1) { packets.splice(i,1); continue; }
+    const from = nodes2[p.from], to = nodes2[p.to];
+    const px = from.x + (to.x - from.x) * p.t;
+    const py = from.y + (to.y - from.y) * p.t;
+    ctx.beginPath();
+    ctx.arc(px, py, 2.5, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(57,255,142,${0.6 * (1 - Math.abs(p.t - .5) * 2)})`;
+    ctx.shadowColor = 'rgba(57,255,142,.5)';
+    ctx.shadowBlur = 6;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+
+  // Horizontal streams
+  streams.forEach(s => {
+    s.x += s.speed;
+    if (s.x > canvas.width + s.len) s.x = -s.len;
+    const grad = ctx.createLinearGradient(s.x - s.len, 0, s.x, 0);
+    grad.addColorStop(0, 'rgba(0,229,255,0)');
+    grad.addColorStop(1, `rgba(0,229,255,${s.a})`);
+    ctx.fillStyle = grad;
+    ctx.fillRect(s.x - s.len, s.y, s.len, 1);
+  });
+}
+
+setInterval(drawBg, 45);
+
+// ─── FILTER ───
+function filterTeam(btn, category) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const cards = document.querySelectorAll('#team-grid .member-card, #team-grid .open-card');
+  let visible = 0;
+
+  cards.forEach(card => {
+    const cats = card.dataset.category || 'all';
+    if (category === 'all' || cats.includes(category)) {
+      card.style.display = '';
+      card.style.opacity = '1';
+      card.style.transform = 'translateY(0)';
+      visible++;
+    } else {
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(12px)';
+      setTimeout(() => { card.style.display = 'none'; }, 280);
+    }
+  });
+
+  document.getElementById('visible-count').textContent = visible;
+}
+
+// ─── COUNTERS ───
+function countUp(el) {
+  const raw = el.dataset.target;
+  const isNum = /^\d+$/.test(raw);
+  if (!isNum) { el.textContent = raw; return; }
+  const target = parseInt(raw);
+  let cur = 0;
+  const step = Math.max(target / 50, 1);
+  const t = setInterval(() => {
+    cur = Math.min(cur + step, target);
+    el.textContent = Math.round(cur);
+    if (cur >= target) clearInterval(t);
+  }, 24);
+}
+
+// ─── INTERSECTION OBSERVER ───
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      entry.target.querySelectorAll('[data-target]').forEach(countUp);
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.08 });
+
+document.querySelectorAll('.fade-in, .stagger').forEach(el => observer.observe(el));
+</script>
+
 </body>
 </html>
